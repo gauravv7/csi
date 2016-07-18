@@ -73,8 +73,7 @@ class RegisterController extends Controller
             $titles = Salutation::all();
 
             $country_code = (Input::exists('country'))? Input::get('country'): '';
-            $countries = Country::lists('name', 'alpha3_code')->prepend('Please select a country', 'invalid');
-
+            $countries = Country::where('alpha3_code', 'IND')->lists('name', 'alpha3_code')->prepend('Please select a country', 'invalid');
             if( ( $entity == 'institution-academic') ) {
                 $institutionTypes = InstitutionType::getInstitutionTypesById(1)->get();
                 return view('frontend.register.institution-academic', compact('entity', 'institutionTypes', 'titles','countries', 'country_code', 'isSingleStep'));
@@ -163,7 +162,7 @@ class RegisterController extends Controller
         $bank = (Input::exists('bank'))? Input::get('bank'): '';
         $branch = (Input::exists('branch'))? Input::get('branch'): '';
         $amountPaid = (Input::exists('amountPaid'))? Input::get('amountPaid'): '';
-        $str_password = str_random(15);
+        $str_password = str_random(8);
         $password = (strcasecmp(env('APP_ENV', 'development'), 'production')==0)? Hash::make($str_password): Hash::make("1234");
 
         if ( ( $entity == 'institution-academic') ) {
