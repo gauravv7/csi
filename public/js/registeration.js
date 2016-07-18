@@ -176,6 +176,7 @@ $(document).ready(function() {
 		   if (code == '9') {
 			if(this.value!="invalid"){
 				cdata = handleCookie(KEY_STUDENT_BRANCH, this.value);	//setting cookie to get value later
+				$('input[name="college"').val($('#stud_branch option:selected').text());
 			}
 		   }
 		});
@@ -229,6 +230,7 @@ $(document).ready(function() {
 		$('#stud_branch').on('click', function(e) {
 			if(this.value!="invalid"){
 				cdata = handleCookie(KEY_STUDENT_BRANCH, this.value);	//setting cookie to get value later
+				$('input[name="college"').val($('#stud_branch option:selected').text());
 			}
 		});
 	}
@@ -339,6 +341,7 @@ function request_student_branches(state_code) {
 			//select previously made choice from cookie
 			if( (valueSBranchSelected = getCookie(KEY_STUDENT_BRANCH))!="" ){
 				setSelect("stud_branch", valueSBranchSelected);
+				$('input[name="college"').val($('#stud_branch option:selected').text());
 			}
 		} else{
 			$('#stud_branch').prepend($('<option>', { 
