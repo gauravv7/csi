@@ -1297,7 +1297,7 @@ description: This plugin provides functionality to verify MULTI-STEP html forms,
             message: "Cannot start with numbers, use only alpha numeric characters" 
         },
         alphaDash: {
-          regex: /^(?![0-9 ]*$)[0-9A-Za-z \-]+$/,
+          regex: /^(?![0-9 ]*$)[0-9A-Za-z ().\-]+$/,
           message: "Use digits, letters & '-' only "
         },
         name: {
@@ -1309,7 +1309,7 @@ description: This plugin provides functionality to verify MULTI-STEP html forms,
           message: "Use digits, letters & special character which are -, ', . only "
         },
         address: {
-          regex: /^[ 0-9A-Za-z,.():#\-]+$/,
+          regex: /^[ 0-9A-Za-z,.():#/\-]+$/,
           message: "Use digits, letters & '-' only "
         },
         text: {
