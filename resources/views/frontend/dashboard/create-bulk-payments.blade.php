@@ -6,7 +6,7 @@
    			<div class="row">
    				<div class="col-md-12">
    					<div>
-					  	<h1 class="section-header-style">Make Bulk Payments</h1>
+					  	<h1 class="section-header-style">Make Payments for Bulk Registrations</h1>
 					</div>
    						
    					@if ( $errors->any() )

@@ -23,39 +23,40 @@
   
   <div class="row">
     <div class="col-md-10">
-      <div class="col-md-3">
-        <ul class="list-unstyled">
-          <li>
-            <span class="header">Paid By</span>
-             {{ $j->narration->payer->getMembership->getName() }}
-          </li>
-          <li>
-            <span class="header">Drafted Amount</span>
-           {{ $j->narration->getFormattedDraftedAmount() }}
-          </li>
-          
-        </ul>
+      <div class="row">
+        <div class="col-md-12">
+          <ul class="list-unstyled list-inline">
+            <li>
+              <span class="header">Paid By</span>
+               {{ $j->narration->payer->getMembership->getName() }}
+            </li>
+            
+            <li>
+              <span class="header">Bank</span>
+              {{ $j->narration->bank }}
+            </li>
+            
+          </ul>
+        </div>
       </div>
-      
-      <div class="col-md-3">
-        <ul class="list-unstyled">
-          <li>
-            <span class="header">Bank</span>
-            {{ $j->narration->bank }}
-          </li>
-          <li>
-            <span class="header">Branch</span>
-            {{ $j->narration->branch }}
-          </li>
-        </ul>
-      </div>
-      <div class="col-md-3">
-        <ul class="list-unstyled">
-          <li>
-            <span class="header">Payment Mode</span>
-            {{ $j->narration->paymentMode->name }}
-          </li>
-        </ul>
+      <div class="row">
+        <div class="col-md-12">
+          <ul class="list-unstyled list-inline">
+            <li>
+              <span class="header">Drafted Amount</span>
+             {{ $j->narration->getFormattedDraftedAmount() }}
+            </li>
+            <li>
+              <span class="header">Branch</span>
+              {{ $j->narration->branch }}
+            </li>
+
+            <li>
+              <span class="header">Payment Mode</span>
+              {{ $j->narration->paymentMode->name }}
+            </li>
+          </ul>
+        </div>
       </div>
     </div>
     <div class="col-md-2">

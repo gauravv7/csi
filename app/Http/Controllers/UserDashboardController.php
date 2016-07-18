@@ -24,11 +24,17 @@ class UserDashboardController extends Controller
         if($id!=null || intval($id)>0){
             $user = Auth::user()->user();
             $payments = Payment::filterByServiceAndMember(1, $user->id)->get();
+            $reject = 0;
             $unSettledMembershipPayment = 0;
             if(!$payments->isEmpty()){
                 foreach ($payments as $payment) {
                     if( ($paidDiff = $payment->getPayableDiff()) != 0){
                         $unSettledMembershipPayment = 1;
+                    }
+                    foreach ($payment->journals as $journal) {
+                        if($journal->is_rejected){
+                            $reject = 1;
+                        }
                     }
                 }
             } else{
@@ -38,7 +44,7 @@ class UserDashboardController extends Controller
             if($user->membership->type == "individual") {
                 $isProfileVerified = $user->getMembership->subType->is_verified;
             }
-            return view('frontend.dashboard.home', compact('user', 'paidDiff', 'unSettledMembershipPayment', 'isProfileVerified'));
+            return view('frontend.dashboard.home', compact('user', 'paidDiff', 'unSettledMembershipPayment', 'isProfileVerified', 'reject'));
         }
     }
 

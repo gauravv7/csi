@@ -63,7 +63,11 @@
            @else {{-- checkMembershipPaymentValidity --}}
              @if($unSettledMembershipPayment)
                 <div class="alert alert-dismissible alert-warning">
-                  <h4>Payments details submitted by you have not been verified by admin yet</h4>
+                  @if($reject)
+                    <h4>The payments made by you have been rejected by admin</h4>
+                  @else
+                    <h4>Payments details submitted by you have not been verified by admin yet</h4>
+                  @endif
                   <p>you have unsettled payments for your membership, <a href={{ route('viewAllMembershipPayments') }} class="alert-link">click here</a> to see your payments</p>
                 </div>
               @else

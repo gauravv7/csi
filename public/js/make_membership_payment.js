@@ -9,7 +9,7 @@ var formElements = [
 		"bank": {
 			rule: [
 				'required',
-				'alphaNumeric'
+				'text'
 			]
 		},
 		"drawn": {
@@ -21,13 +21,12 @@ var formElements = [
 		"branch": {
 			rule: [
 				'required',
-				'alphaNumeric'
+				'text'
 			]
 		},
 		"tno": {
 			rule: [
 				'required',
-				'alphaNumeric'
 			],
 		},
 		"paymentReciept": {

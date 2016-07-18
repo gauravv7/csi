@@ -13,7 +13,7 @@
    <div class="row">
       <div class="col-md-12" style="padding-left: 30px;">
             <h2>
-               Bulk Payments
+               Bulk Registrations
             </h2>
           @if (Session::has('flash_notification.message'))
             <div class="alert alert-{{ Session::get('flash_notification.level') }}">
@@ -41,10 +41,10 @@
       <div class="col-md-8">
         <ul class="list-inline pull-left listing-quick-links">
           <li>
-            <a class="btn btn-success btn-xs pull-left" data-toggle="modal" data-target="#uploadCSV" href="#" title="add a bulk-payment" style="text-transform: capitalize; font-size: 14px;"><span class="glyphicon glyphicon-plus"></span>Upload Bulk Payments Data File</a>
+            <a  class="btn btn-success btn-xs pull-left"  href={{ route('BulkPaymentsGetFileSample') }} title="download sample file for bulk-payments" style="text-transform: capitalize; font-size: 14px;"><span class="glyphicon glyphicon-file"></span>Download Sample Bulk Payment Data File</a>
           </li>
           <li>
-            <a  class="btn btn-success btn-xs pull-left"  href={{ route('BulkPaymentsGetFileSample') }} title="download sample file for bulk-payments" style="text-transform: capitalize; font-size: 14px;"><span class="glyphicon glyphicon-file"></span>Download Sample Bulk Payment Data File</a>
+            <a class="btn btn-success btn-xs pull-left" data-toggle="modal" data-target="#uploadCSV" href="#" title="add a bulk-payment" style="text-transform: capitalize; font-size: 14px;"><span class="glyphicon glyphicon-plus"></span>Upload Bulk Payments Data File</a>
           </li>
           <li>
             <a  class="btn btn-warning btn-xs pull-left"  href="#" title="view Instructions" style="text-transform: capitalize; font-size: 14px;" data-toggle="modal" data-target="#InstructionBulkPayments"><span class="glyphicon glyphicon-question-sign"></span>Click here for help</a>

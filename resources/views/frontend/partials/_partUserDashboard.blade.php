@@ -48,7 +48,7 @@
          <div class="panel-heading">
             <div class="row">
                <div class="col-md-12">
-                  <p><span class="glyphicon glyphicon-exclamation-sign"></span>Bulk Payments</p>
+                  <p><span class="glyphicon glyphicon-exclamation-sign"></span>Bulk Registrations</p>
                </div>
             </div> <!-- row -->
             <div class="row">

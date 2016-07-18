@@ -23,39 +23,38 @@
         
         <div class="row">
           <div class="col-md-8">
-            <div class="col-md-3">
-              <ul class="list-unstyled">
-                <li>
-                  <span class="header">Paid By</span>
-                   {{ $narration->payer->getMembership->getName() }}
-                </li>
-                <li>
-                  <span class="header">Drafted Amount</span>
-                 {{ $bulkPayment->getFormattedCalculatedAmount() }}
-                </li>
-                
-              </ul>
+            <div class="row">
+              <div class="col-md-12">
+                <ul class="list-unstyled list-inline">
+                  <li>
+                    <span class="header">Paid By</span>
+                     {{ $narration->payer->getMembership->getName() }}
+                  </li>
+                  
+                  <li>
+                    <span class="header">Bank</span>
+                    {{ $narration->bank }}
+                  </li>
+                </ul>
+              </div>
             </div>
-            
-            <div class="col-md-3">
-              <ul class="list-unstyled">
-                <li>
-                  <span class="header">Bank</span>
-                  {{ $narration->bank }}
-                </li>
-                <li>
-                  <span class="header">Branch</span>
-                  {{ $narration->branch }}
-                </li>
-              </ul>
-            </div>
-            <div class="col-md-3">
-              <ul class="list-unstyled">
-                <li>
-                  <span class="header">Payment Mode</span>
-                  {{ $narration->paymentMode->name }}
-                </li>
-              </ul>
+            <div class="row">
+              <div class="col-md-12">
+                <ul class="list-unstyled list-inline">
+                  <li>
+                    <span class="header">Drafted Amount</span>
+                   {{ $bulkPayment->getFormattedCalculatedAmount() }}
+                  </li>
+                  <li>
+                    <span class="header">Branch</span>
+                    {{ $narration->branch }}
+                  </li>
+                  <li>
+                    <span class="header">Payment Mode</span>
+                    {{ $narration->paymentMode->name }}
+                  </li>
+                </ul>
+              </div>
             </div>
           </div>
           <div class="col-md-4">
