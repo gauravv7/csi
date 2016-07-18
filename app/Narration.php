@@ -2,6 +2,7 @@
 
 namespace App;
 
+use App\MyHelpers\HFunctions;
 use Carbon\Carbon;
 use Illuminate\Database\Eloquent\Model;
 
@@ -31,6 +32,6 @@ class Narration extends Model
 
     public function getFormattedDraftedAmount(){
         ($this->journals->first()->payment->paymentHead->currency->currency_code == 'INR')? setlocale(LC_MONETARY, 'en_IN'): setlocale(LC_MONETARY, 'en_US');
-        return money_format('%i', $this->drafted_amount);
+        return (function_exists('money_format'))? money_format('%i', $this->drafted_amount): HFunctions::money_format('%i', $this->drafted_amount);
     }
 }

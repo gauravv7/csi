@@ -2,6 +2,7 @@
 
 namespace App;
 
+use App\MyHelpers\HFunctions;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Model;
 
@@ -45,7 +46,7 @@ class Journal extends Model
 
     public function getFormattedPaidAmount(){
         ($this->payment->paymentHead->currency->currency_code == 'INR')? setlocale(LC_MONETARY, 'en_IN'): setlocale(LC_MONETARY, 'en_US');
-        return money_format('%i', $this->paid_amount);
+        return (function_exists('money_format'))? money_format('%i', $this->paid_amount): HFunctions::money_format('%i', $this->paid_amount);
     }
 
 }

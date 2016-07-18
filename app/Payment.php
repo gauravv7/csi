@@ -2,6 +2,7 @@
 
 namespace App;
 
+use App\MyHelpers\HFunctions;
 use Carbon\Carbon;
 use Illuminate\Database\Eloquent\Model;
 
@@ -132,12 +133,12 @@ class Payment extends Model
         $total = $this->journals->filter(function($item){ 
                     return ($item->is_rejected != 1)? true: false; 
                 })->sum('paid_amount');
-        return money_format('%i', $total);
+        return (function_exists('money_format'))? money_format('%i', $total): HFunctions::money_format('%i', $total);
     }
 
     public function getFormattedAmount($currency_code, $amount){
         ($currency_code == 'INR')? setlocale(LC_MONETARY, 'en_IN'): setlocale(LC_MONETARY, 'en_US');
-        return money_format('%i', $amount);
+        return (function_exists('money_format'))? money_format('%i', $amount): HFunctions::money_format('%i', $amount);
     }
 
 }
