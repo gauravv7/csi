@@ -268,8 +268,7 @@ class NomineeController extends Controller
                 } else {
                     if(Auth::user()->user()->getMembership->id== $user->associating_institution_id) {
                     if ($user->is_nominee == ActionStatus::pending && $user->associating_institution_id == Auth::user()->user()->getMembership->id) {
-                        $user->is_nominee = ActionStatus::cancelled;
-                        $user->associating_institution_id = null;
+                        $user->is_nominee = ActionStatus::nothing;
                         if ($user->save()) {
                             $nameOfInst = Auth::user()->user()->getMembership->getName();
                             $emailOfInst = Auth::user()->user()->email;
