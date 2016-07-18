@@ -71,10 +71,38 @@
                   <p>you have unsettled payments for your membership, <a href={{ route('viewAllMembershipPayments') }} class="alert-link">click here</a> to see your payments</p>
                 </div>
               @else
+
                 <div class="alert alert-dismissible alert-warning">
                   <h4>Payments details submitted by you have not been verified by admin yet</h4>
                   <p>Your payments are not verified. Please wait use your services, until the same is verified</p>
                 </div>
+                @if(!$reject)
+                   @can('is-individual')
+                      <div class="row">
+                        <div class="col-md-4">
+                           <div class="panel dashboard-divs panel-primary">
+                              <div class="panel-heading">
+                                 <div class="row">
+                                    <div class="col-md-12">
+                                       <p><span class="glyphicon glyphicon-user"></span>Be a Nominees</p>
+                                    </div>
+                                 </div> <!-- row -->
+                                 <div class="row">
+                                    <div class="col-md-12">
+                                       <a href={{ route('NomineeView') }} style="color:#fff">
+                                          <span class="pull-left">View Details</span>
+                                          <span class="pull-right glyphicon glyphicon-chevron-right"></span>
+                                          <div class="clearfix"></div>
+                                       </a>
+                                    </div>
+                                 </div> <!-- row -->
+                                 
+                              </div> <!-- panel-heading -->
+                           </div>   <!-- panel -->
+                        </div>   <!-- div.md-4 -->  
+                      </div>
+                   @endcan
+                @endif
              @endif
            @endcan {{-- checkMembershipPaymentValidity --}}
       </div>

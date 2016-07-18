@@ -54,8 +54,6 @@ class AuthServiceProvider extends ServiceProvider
                 if($user->getMembership->membershipType->type == 'academic'){
                     $result = true;
                 }
-            } else{
-                $result = true;
             }
             return $result;
         });
@@ -65,9 +63,7 @@ class AuthServiceProvider extends ServiceProvider
             if($user){
                 if($user->membership->type == 'institutional'){
                     $result = true;
-                }
-            } else{
-                $result = true;
+                } 
             }
             return $result;
         });
@@ -77,9 +73,7 @@ class AuthServiceProvider extends ServiceProvider
             if($user){
                 if($user->membership->type == 'individual'){
                     $result = true;
-                }
-            } else{
-                $result = true;
+                } 
             }
             return $result;
         });
