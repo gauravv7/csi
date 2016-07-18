@@ -12,5 +12,6 @@ class ActionStatus extends MyEnum
   const pending         = -1;
   const cancelled       = 0;
   const approved        = 1;
+  const nothing         = -2;
 
 }

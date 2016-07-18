@@ -14,7 +14,7 @@
 			{!! Form::select('stud_branch', ['invalid' => 'Please select a student branch'], null, array('class'=>"form-control", 'id'=>"stud_branch")) !!}
 		</div>
 	
-	@elseif ( ( $entity == 'institution-academic') || ( $entity == 'institution-non-academic') || ( $entity == 'individual-professional') )
+	@elseif ( ( $entity == 'institution-academic') || ( $entity == 'institution-non-academic') || ( $entity == 'individual-professional')|| ( $entity == 'nominee') )
 		<div class="form-group">
 			<label for="exampleInputEmail1" class="req">Chapters*</label>
 		  	{!! Form::select('chapter', ['invalid' => 'Please select a chapter'], null, array('class'=>"form-control", 'id'=>"chapter")) !!}

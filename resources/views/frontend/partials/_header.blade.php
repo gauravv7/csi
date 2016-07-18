@@ -95,6 +95,10 @@
                                 <li>
                                     <a href={{ route('register', [ 'entity' => 'individual-professional' ]) }}>Individual - professional membership</a>
                                 </li>
+                                <li role="separator" class="divider"></li>
+                                <li>
+                                    <a href={{ route('register', [ 'entity' => 'nominee' ]) }}>CSI Nominee Membership</a>
+                                </li>
                             </ul>
                         </li>
                     @endif

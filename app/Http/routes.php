@@ -243,6 +243,10 @@ Route::group(['middleware'=>'checkUserPaymentsVerified'], function(){
 	Route::group(['prefix' => 'nominees', 'middleware' =>'auth'], function(){
 		Route::get('/', ['as' => 'NomineeView', 'uses' => 'NomineeController@index']);
 		Route::post('/add', ['as' => 'NomineeCreate', 'uses' => 'NomineeController@store']);
+		Route::get('/{id}/accept', ['as' => 'NomineeAccept', 'uses' => 'NomineeController@accept']);
+		Route::get('/{id}/reject', ['as' => 'NomineeReject', 'uses' => 'NomineeController@reject']);
+		Route::get('/{id}/remove', ['as' => 'NomineeRemove', 'uses' => 'NomineeController@remove']);
+		Route::get('/{id}/renew', ['as' => 'NomineeRenew', 'uses' => 'NomineeController@renew']);
 		Route::get('/{id}/delete', ['as' => 'NomineeDelete', 'uses' => 'NomineeController@destroy']);
 	});
 
@@ -269,7 +273,8 @@ Route::group(['prefix' => 'userprofile', 'middleware'=>'auth'], function(){
 	Route::get('/printcard', ['as' => 'printcard', 'uses' => 'CardController@index']);
 	Route::post('/printcard/editcardname', ['middleware'=>['checkUserPaymentsVerified'], 'as' => 'EditCardName', 'uses' => 'CardController@update']);
 	Route::post('/profile-id/upload', [ 'as' => 'adminEditProfile', 'uses'=>'ProfileController@update' ]);
-});	
+	Route::get('/{id}/view', [ 'as' => 'userViewProfile', 'uses'=>'ProfileController@profile' ]);
+});
 
 Route::get('/dashboard', ['middleware'=>['auth'], 'as' => 'userDashboard', 'uses'=>'UserDashboardController@index']);
 

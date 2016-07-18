@@ -6,7 +6,7 @@ use Illuminate\Database\Eloquent\Model;
 
 class ProfessionalMember extends Model
 {
-    protected $fillable = ['id', 'organisation', 'designation', 'proof_id']; 
+    protected $fillable = ['id', 'associating_institution_id','organisation', 'designation', 'is_nominee','proof_id'];
 
     public function getDateOfEffectAttribute($nominee_effective){
         return ($nominee_effective == '0000-00-00')? null: Carbon::parse($nominee_effective);

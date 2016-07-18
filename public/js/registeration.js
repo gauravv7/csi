@@ -3,6 +3,8 @@ var KEY_COUNTRY = "country_choice";
 var KEY_STATE = "state_choice";
 var KEY_CHAPTER = "chapter_choice";
 var KEY_STUDENT_BRANCH = "sbranch_choice";
+var KEY_ASSOCIATING_INST = "associating_institution";
+
 var TTL = 15;
 var url = window.location.origin+'/';
 
@@ -42,7 +44,8 @@ function setSelect(name, value){
 
 $(document).ready(function() {
 	mp = $('input:radio[name="membership-period"]:checked').val();
-	var valueSelected, valueStateSelected, valueSBranchSelected, valueChapterSelected;
+	var is_nominee_form = ($('select[name="associating_institution"] option:selected').length >0 )?true:false;
+	var valueSelected, valueStateSelected, valueSBranchSelected, valueChapterSelected, valueAssociatingInstitutionSelected;
 	if( (valueSelected = getCookie(KEY_COUNTRY))!="" ){
 		if(valueSelected!="invalid" && valueSelected == 'IND'){
 			setSelect("country", valueSelected);
@@ -63,6 +66,38 @@ $(document).ready(function() {
 		setSelect("country", valueSelected);
 		request_states(valueSelected);
 		request_country_dial_code(valueSelected);
+	}
+
+	if(is_nominee_form) {
+		if ((valueAssociatingInstitutionSelected = getCookie(KEY_ASSOCIATING_INST)) != "") {
+			if (valueAssociatingInstitutionSelected != "invalid") {
+				setSelect("associating_institution", valueAssociatingInstitutionSelected);
+				var text = $('select[name="associating_institution"] option:selected').text();
+				$('input[name="organisation"]').val(text);
+			}
+		}
+		$('select[name="associating_institution"]').keydown(function (e) {
+			var code = e.keyCode || e.which;
+			if (code == '9') {
+				var optionSelected = $("option:selected", this);
+				var valueAssociatingInstitutionSelected = this.value;
+				if (valueAssociatingInstitutionSelected != "invalid") {
+					cdata = handleCookie(KEY_ASSOCIATING_INST, valueAssociatingInstitutionSelected);	//setting cookie to get value later
+					var text = $('select[name="associating_institution"] option:selected').text();
+					$('input[name="organisation"]').val(text);
+				}
+			}
+		});
+
+		$('select[name="associating_institution"]').on('click', function (e) {
+			var optionSelected = $("option:selected", this);
+			var valueAssociatingInstitutionSelected = this.value;
+			if (valueAssociatingInstitutionSelected != "invalid") {
+				cdata = handleCookie(KEY_ASSOCIATING_INST, this.value);	//setting cookie to get value later
+				var text = $('select[name="associating_institution"] option:selected').text();
+				$('input[name="organisation"]').val(text);
+			}
+		});
 	}
 	
 	$('input:radio[name="membership-period"]').change(function() {

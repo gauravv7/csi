@@ -9,6 +9,7 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Input;
 use Laracasts\Flash\Flash;
+use App\Member;
 
 class ProfileController extends Controller
 {
@@ -99,5 +100,16 @@ class ProfileController extends Controller
     public function destroy($id)
     {
         //
+    }
+
+    public function profile($id)
+    {
+        if(intval($id)>1){
+            $user = Member::find($id);
+            $is_inline = true;
+            return view('frontend.dashboard.profile', compact('user', 'is_inline'));
+        } else{
+            abort('404');
+        }
     }
 }

@@ -2,6 +2,7 @@
 
 namespace App;
 
+use App\Enums\ActionStatus;
 use Carbon\Carbon;
 use Illuminate\Auth\Authenticatable;
 use Illuminate\Contracts\Auth\Access\Authorizable as AuthorizableContract;
@@ -89,7 +90,7 @@ class Member extends Model implements AuthenticatableContract,
 
     public function checkMembershipPaymentValidity(){
         $retVal = false;
-        if( ($this->getMembership->membershipType->type == 'professional') && ($this->getMembership->subType->is_nominee) ){
+        if( ($this->getMembership->membershipType->type == 'professional') && ($this->getMembership->subType->is_nominee==ActionStatus::approved) ){
             $payments = Payment::filterByServiceAndMember(1, $this->getMembership->subType->institution->member_id)->get();
         } else{
             $payments = Payment::filterByServiceAndMember(1, $this->id)->get();

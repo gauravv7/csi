@@ -19,7 +19,7 @@ class CreateProfessionalMembersTable extends Migration
             $table->bigInteger('associating_institution_id')->unsigned()->index()->nullable();
             $table->string('organisation', 50);
             $table->string('designation', 30);
-            $table->tinyInteger('is_nominee')->default(0);
+            $table->tinyInteger('is_nominee')->default(-2);
             $table->date('nominee_effective')->nullable();
             $table->string('proof_id', 30);
             $table->tinyInteger('is_verified')->default(-1);

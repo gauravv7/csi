@@ -3,6 +3,7 @@
 namespace App\Http\Controllers;
 
 use App;
+use App\Enums\ActionStatus;
 use App\Http\Controllers\Controller;
 use App\Http\Requests;
 use App\Http\Requests\CreateNomineeRequest;
@@ -13,6 +14,7 @@ use App\Member;
 use App\Narration;
 use App\Payment;
 use App\ProfessionalMember;
+use App\Individual;
 use App\RequestService;
 use App\Service;
 use Carbon\Carbon;
@@ -31,8 +33,58 @@ class NomineeController extends Controller
      */
     public function index()
     {
-        $members = ProfessionalMember::where('is_nominee', 1)->where('associating_institution_id', Auth::user()->user()->getMembership->id)->get();
-        return view('frontend.dashboard.listing-nominees', compact('members'));
+
+        $verified='';
+        $not_verified='';
+        $statuses = [
+            1 => 'Accepted',
+            -1 => 'Pending',
+            0 => 'Cancelled'
+        ];
+
+        $rows = (Input::exists('rows'))?abs(Input::get('rows')): 15;         // how many rows for pagination
+        $page = (Input::exists('page'))? abs(Input::get('page')): 1;
+        $status=Input::get('status');// current page
+        $fromDate=(Input::exists('request_from_date'))?(Input::get('request_from_date')):'';
+        $toDate=(Input::exists('request_to_date'))?(Input::get('request_to_date')):'';
+
+        if(count($status)){
+            $checkbox_array=Input::get('status');
+            $members = ProfessionalMember::whereIn('is_nominee', $status)->where('associating_institution_id', Auth::user()->user()->getMembership->id)->paginate();
+
+
+        }else{
+            $checkbox_array=array();
+            $members = ProfessionalMember::whereIn('is_nominee', [ActionStatus::pending, ActionStatus::approved])->where('associating_institution_id', Auth::user()->user()->getMembership->id)->paginate();
+
+
+        }
+
+
+        //$members = ProfessionalMember::whereIn('is_nominee', [ActionStatus::pending, ActionStatus::approved])->where('associating_institution_id', Auth::user()->user()->getMembership->id)->paginate();
+
+        $from_date_records = array();
+        $to_date_records = array();
+        foreach ($members as $key => $member) {
+            if($fromDate){
+                if($member->created_at <= $fromDate ){ //lower bound
+                    array_push($from_date_records, $key);
+                }
+            }
+            if($toDate){
+                if($member->created_at >= $toDate ){ //upper bound
+                    array_push($to_date_records, $key);
+                }
+            }
+            if(!empty($fromDate)){
+                //we need intersection of both the filters
+                $members->forget($from_date_records);
+            }
+            if(!empty($toDate)){
+                $members->forget($to_date_records);
+            }
+        }
+        return view('frontend.dashboard.listing-nominees', compact('statuses','checkbox_array','members','verified','not_verified','rows','page','fromDate','toDate'));
     }
 
     /**
@@ -59,13 +111,13 @@ class NomineeController extends Controller
         //nominees can be a professional individual only
         if($member->getMembership->membershipType->type == 'professional'){
             $prof = $member->getMembership->subType;
-            if( $prof->hasAssociatingInstitution()->exists() && $prof->is_nominee ){
+            if( $prof->hasAssociatingInstitution()->exists() && $prof->is_nominee== ActionStatus::approved ){
                 Flash::error('The user has already been nominated. Please try again');
             } else{
                 $prof->associating_institution_id = Auth::user()->user()->getMembership->id;
-                $prof->is_nominee = 1;
+                $prof->is_nominee = ActionStatus::approved;
                 $prof->nominee_effective = Carbon::now()->format('d/m/Y');
-                $count = ProfessionalMember::where('associating_institution_id', 2)->where('is_nominee', 1)->count();
+                $count = ProfessionalMember::where('associating_institution_id',$prof->associating_institution_id)->where('is_nominee', 1)->count();
                 if(!$member->alloted_id){
                     $member->alloted_id = Payment::getNextAllotedID();
                     $member->save();
@@ -99,6 +151,192 @@ class NomineeController extends Controller
         }
         return redirect()->back();
     }
+    public function accept($id)
+    {
+        if(intval($id)>0) {
+            $prof_member = ProfessionalMember::find($id);
+            $prof_individual = Individual::find($id);
+            $member = Member::find($prof_individual->member_id);
+            // Payment::filterByServiceAndMember(1, Auth::user()->user()->id)->get();
+            //nominees can be a professional individual only
+            if(Auth::user()->user()->getMembership->id== $prof_member->associating_institution_id) {
+                if ($member->getMembership->membershipType->type == 'professional') {
+                    $prof = $member->getMembership->subType;
+                    if ($prof->hasAssociatingInstitution()->exists() && $prof->is_nominee == ActionStatus::approved) {
+                        Flash::error('The user has already been nominated. Please try again');
+                    } else {
+                        $prof->associating_institution_id = $prof_member->associating_institution_id;
+                        $prof->is_nominee = ActionStatus::approved;
+                        $prof->nominee_effective = Carbon::now()->format('d/m/Y');
+                        $count = ProfessionalMember::where('associating_institution_id', $prof->associating_institution_id)->where('is_nominee', ActionStatus::approved)->count();
+                        if (!$member->alloted_id) {
+                            $member->alloted_id = Payment::getNextAllotedID();
+                            $member->save();
+                        }
+                        if ($count < 3) {
+                            if (Auth::user()->user()->checkMembershipPaymentValidity()) {
+                                if ($prof->save()) {
+                                    $nameOfInst = Auth::user()->user()->getMembership->getName();
+                                    $emailOfInst = Auth::user()->user()->email;
+                                    $emailOfHeadInst = Auth::user()->user()->email;
+                                    $effective_date = $prof->nominee_effective;
+                                    if (App::environment('production')) {
+                                        $this->dispatch(new SendNomineeMembershipAcceptSms($member->email, $member->getMembership->getMobile(), $effective_date, $nameOfInst));
+                                        Mail::queue('frontend.emails.nominee-membership-accept', ['name' => $member->getMembership->getName(), 'email' => $member->email, 'inst' => $nameOfInst, 'date' => $effective_date], function ($message) use ($member, $emailOfInst, $emailOfHeadInst) {
+                                            $message->to($member->email)->subject('CSI-Nominee Membership Registeration');
+                                            $message->bcc($emailOfInst)->subject('CSI-Nominee Membership Registeration');
+                                            $message->bcc($emailOfHeadInst)->subject('CSI-Nominee Membership Registeration');
+                                        });
+                                    }
+                                    Flash::success('Nominee created successfully');
+                                }
+                            } else {
+                                Flash::error('you are not authorized for this action');
+                            }
+                        } else {
+                            Flash::error('No more than 3 nominees can be added');
+                        }
+                    }
+                } else {
+                    Flash::error('Nominated member of category "' . $member->getFormattedEntity() . '" is not authorized for this action');
+                }
+            }
+        }
+        return redirect()->back();
+    }
+
+    public function renew($id)
+    {
+        if(intval($id)>0) {
+            $prof_member = ProfessionalMember::find($id);
+            $prof_individual = Individual::find($id);
+            $member = Member::find($prof_individual->member_id);
+            // Payment::filterByServiceAndMember(1, Auth::user()->user()->id)->get();
+            //nominees can be a professional individual only
+            if(Auth::user()->user()->getMembership->id== $prof_member->associating_institution_id) {
+                if ($member->getMembership->membershipType->type == 'professional') {
+                    $prof = $member->getMembership->subType;
+                    if ($prof->hasAssociatingInstitution()->exists() && $prof->is_nominee == ActionStatus::approved) {
+                        Flash::error('The user has already been nominated. Please try again');
+                    } else {
+//                    $prof->associating_institution_id = $prof_member->associating_institution_id;
+                        $prof->is_nominee = ActionStatus::approved;
+                        $prof->nominee_effective = Carbon::now()->format('d/m/Y');
+                        $count = ProfessionalMember::where('associating_institution_id', $prof->associating_institution_id)->where('is_nominee', ActionStatus::approved)->count();
+                        if (!$member->alloted_id) {
+                            $member->alloted_id = Payment::getNextAllotedID();
+                            $member->save();
+                        }
+                        if ($count < 3) {
+                            if (Auth::user()->user()->checkMembershipPaymentValidity()) {
+                                if ($prof->save()) {
+                                    $nameOfInst = Auth::user()->user()->getMembership->getName();
+                                    $emailOfInst = Auth::user()->user()->email;
+                                    $emailOfHeadInst = Auth::user()->user()->email;
+                                    $effective_date = $prof->nominee_effective;
+                                    if (App::environment('production')) {
+                                        $this->dispatch(new SendNomineeMembershipAcceptSms($member->email, $member->getMembership->getMobile(), $effective_date, $nameOfInst));
+                                        Mail::queue('frontend.emails.nominee-membership-accept', ['name' => $member->getMembership->getName(), 'email' => $member->email, 'inst' => $nameOfInst, 'date' => $effective_date], function ($message) use ($member, $emailOfInst, $emailOfHeadInst) {
+                                            $message->to($member->email)->subject('CSI-Nominee Membership Registeration');
+                                            $message->bcc($emailOfInst)->subject('CSI-Nominee Membership Registeration');
+                                            $message->bcc($emailOfHeadInst)->subject('CSI-Nominee Membership Registeration');
+                                        });
+                                    }
+                                    Flash::success('Nominee created successfully');
+                                }
+                            } else {
+                                Flash::error('you are not authorized for this action');
+                            }
+                        } else {
+                            Flash::error('No more than 3 nominees can be added');
+                        }
+                    }
+                } else {
+                    Flash::error('Nominated member of category "' . $member->getFormattedEntity() . '" is not authorized for this action');
+                }
+            }
+        }
+        return redirect()->back();
+    }
+    public function reject($id)
+    {
+        if(intval($id)>0){
+            
+                $user = ProfessionalMember::find($id);
+                if (!$user) {
+                    Flash::error('Nominee doesnot exists');
+                } else {
+                    if(Auth::user()->user()->getMembership->id== $user->associating_institution_id) {
+                    if ($user->is_nominee == ActionStatus::pending && $user->associating_institution_id == Auth::user()->user()->getMembership->id) {
+                        $user->is_nominee = ActionStatus::cancelled;
+                        $user->associating_institution_id = null;
+                        if ($user->save()) {
+                            $nameOfInst = Auth::user()->user()->getMembership->getName();
+                            $emailOfInst = Auth::user()->user()->email;
+                            $emailOfHeadInst = Auth::user()->user()->getMembership->email;
+                            $member = $user->individual->member;
+                            if (App::environment('production')) {
+                                $this->dispatch(new SendNomineeMembershipRejectSms($member->email, $member->getMembership->getMobile(), $nameOfInst));
+                                Mail::queue('frontend.emails.nominee-membership-reject', ['name' => $member->getMembership->getName(), 'email' => $member->email, 'inst' => $nameOfInst], function ($message) use ($member, $emailOfInst, $emailOfHeadInst) {
+                                    $message->to($member->email)->subject('CSI-Nominee Membership Registeration');
+                                    $message->bcc($emailOfInst)->subject('CSI-Nominee Membership Registeration');
+                                    $message->bcc($emailOfHeadInst)->subject('CSI-Nominee Membership Registeration');
+                                });
+                            }
+                            Flash::success('Nominee removed successfully');
+                        }
+                    } else {
+                        Flash::error('Not authorized');
+                    }
+                }
+                    else {
+                        Flash::error('Not authorized');
+                    }
+            }
+        }
+
+        return redirect()->back();
+    }
+    public function remove($id)
+    {
+        if(intval($id)>0){
+
+                $user = ProfessionalMember::find($id);
+                if (!$user) {
+                    Flash::error('Nominee doesnot exists');
+                } else {
+                    if(Auth::user()->user()->getMembership->id== $user->associating_institution_id) {
+                    if ($user->is_nominee == ActionStatus::approved && $user->associating_institution_id == Auth::user()->user()->getMembership->id) {
+                        $user->is_nominee = ActionStatus::cancelled;
+                        if ($user->save()) {
+                            $nameOfInst = Auth::user()->user()->getMembership->getName();
+                            $emailOfInst = Auth::user()->user()->email;
+                            $emailOfHeadInst = Auth::user()->user()->getMembership->email;
+                            $member = $user->individual->member;
+                            if (App::environment('production')) {
+                                $this->dispatch(new SendNomineeMembershipRejectSms($member->email, $member->getMembership->getMobile(), $nameOfInst));
+                                Mail::queue('frontend.emails.nominee-membership-reject', ['name' => $member->getMembership->getName(), 'email' => $member->email, 'inst' => $nameOfInst], function ($message) use ($member, $emailOfInst, $emailOfHeadInst) {
+                                    $message->to($member->email)->subject('CSI-Nominee Membership Registeration');
+                                    $message->bcc($emailOfInst)->subject('CSI-Nominee Membership Registeration');
+                                    $message->bcc($emailOfHeadInst)->subject('CSI-Nominee Membership Registeration');
+                                });
+                            }
+                            Flash::success('Nominee removed successfully');
+                        }
+                    } else {
+                        Flash::error('Not authorized');
+                    }
+                }
+                    else{
+                        Flash::error('Not authorized');
+
+                    }
+            }
+        }
+
+        return redirect()->back();
+    }
+
 
     /**
      * Display the specified resource.
@@ -142,31 +380,39 @@ class NomineeController extends Controller
      */
     public function destroy($id)
     {
-        if(intval($id)){
-            $user = ProfessionalMember::find($id);
-            if(!$user){
-                Flash::error('Nominee doesnot exists');
-            } else{
-                if($user->is_nominee && $user->associating_institution_id == Auth::user()->user()->getMembership->id){
-                    $user->is_nominee = 0;
-                    if($user->save()){
-                        $nameOfInst = Auth::user()->user()->getMembership->getName();
-                        $emailOfInst = Auth::user()->user()->email;
-                        $emailOfHeadInst = Auth::user()->user()->getMembership->email;
-                        $member = $user->individual->member;
-                        if(App::environment('production')){
-                            $this->dispatch(new SendNomineeMembershipRejectSms($member->email, $member->getMembership->getMobile(), $nameOfInst));
-                            Mail::queue('frontend.emails.nominee-membership-reject', ['name' => $member->getMembership->getName(), 'email' => $member->email, 'inst' => $nameOfInst], function($message) use($member, $emailOfInst, $emailOfHeadInst){
-                                $message->to($member->email)->subject('CSI-Nominee Membership Registeration');
-                                $message->bcc($emailOfInst)->subject('CSI-Nominee Membership Registeration');
-                                $message->bcc($emailOfHeadInst)->subject('CSI-Nominee Membership Registeration');
-                            });
+        if(intval($id)>0){
+
+                $user = ProfessionalMember::find($id);
+                if (!$user) {
+                    Flash::error('Nominee doesnot exists');
+                } else {
+                    if(Auth::user()->user()->getMembership->id== $user->associating_institution_id) {
+                    if ($user->is_nominee == ActionStatus::approved && $user->associating_institution_id == Auth::user()->user()->getMembership->id) {
+                        $user->is_nominee = ActionStatus::nothing;
+                        $user->associating_institution_id = null;
+                        if ($user->save()) {
+                            $nameOfInst = Auth::user()->user()->getMembership->getName();
+                            $emailOfInst = Auth::user()->user()->email;
+                            $emailOfHeadInst = Auth::user()->user()->getMembership->email;
+                            $member = $user->individual->member;
+                            if (App::environment('production')) {
+                                $this->dispatch(new SendNomineeMembershipRejectSms($member->email, $member->getMembership->getMobile(), $nameOfInst));
+                                Mail::queue('frontend.emails.nominee-membership-reject', ['name' => $member->getMembership->getName(), 'email' => $member->email, 'inst' => $nameOfInst], function ($message) use ($member, $emailOfInst, $emailOfHeadInst) {
+                                    $message->to($member->email)->subject('CSI-Nominee Membership Registeration');
+                                    $message->bcc($emailOfInst)->subject('CSI-Nominee Membership Registeration');
+                                    $message->bcc($emailOfHeadInst)->subject('CSI-Nominee Membership Registeration');
+                                });
+                            }
+                            Flash::success('Nominee removed successfully');
                         }
-                        Flash::success('Nominee removed successfully');
+                    } else {
+                        Flash::error('Not authorized');
                     }
-                } else{
-                    Flash::error('Not authorized');
                 }
+                    else{
+                        Flash::error('Not authorized');
+
+                    }
             }
         }
 
