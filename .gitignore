@@ -10,3 +10,4 @@ Homestead.json
 /storage/uploads/profile_photographs/*
 /storage/uploads/signatures/*
 worker.log
+.idea
