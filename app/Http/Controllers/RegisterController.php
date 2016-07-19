@@ -16,6 +16,7 @@ use App\Institution;
 use App\InstitutionType;
 use App\Jobs\SendMembershipRegisterFormSms;
 use App\Jobs\SendRegisterSms;
+use App\Jobs\SendNomineeMembershipRegisterSms;
 use App\Journal;
 use App\Member;
 use App\Narration;
@@ -296,8 +297,20 @@ class RegisterController extends Controller
                 $name=$user->getMembership->getName();
                 $email=$user->email;
                 $aid=$user->getFullID();
-                $associating_institution=$user->getMembership->subType->institution->name;
+                $associating_institution=$user->getMembership->subType->institution->getName();
+                $associating_institution_email=$user->getMembership->subType->institution->member->email;
                 $isPayableBalanced=true;
+                
+                
+                if(App::environment('production')){
+                    $phone = $user->phone->first();
+                    $mobile = $phone->mobile;
+                    $this->dispatch(new SendNomineeMembershipRegisterSms( $email, $mobile,$associating_institution));
+                    Mail::queue('frontend.emails.nominee-requests.nominee-register', ['name' => $name, 'email' => $email, 'aid' => $aid,'associating_institution'=>$associating_institution], function($message) use($user, $associating_institution_email){
+                        $message->to($user->email)->bcc($associating_institution_email)->subject('CSI-Membership');
+                    });
+                }
+                
                 return View('frontend.register.register_success_csi_nominee', compact('name', 'email', 'aid', 'isPayableBalanced','associating_institution'));
             }
             return view('frontend.register.payments.create-payment', compact('entity', 'payModes', 'membershipPeriods', 'membership_period', 'paymentMode', 'tno', 'drawn', 'bank', 'branch', 'amountPaid'));

@@ -36,7 +36,7 @@ class SendNomineeMembershipRegisterSms extends Job implements SelfHandling, Shou
      */
     public function handle() {
 
-        $smstext = "Your register application have been successfully submitted for a CSI Nominee bearing primary login email as {$this->email} for institution: {$this->inst}. Thankyou. http://www.csi-india.org";
+        $smstext = "Your Nominee Request have been successfully submitted bearing primary login email as {$this->email} for institution: {$this->inst}. Thankyou. http://www.csi-india.org";
 
         $client = new Client();
         $res = $client->request('POST', 'http://203.212.70.200/smpp/sendsms', [

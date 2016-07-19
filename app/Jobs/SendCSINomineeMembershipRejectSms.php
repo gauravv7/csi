@@ -9,13 +9,12 @@ use Illuminate\Contracts\Queue\ShouldQueue;
 use Illuminate\Queue\InteractsWithQueue;
 use Illuminate\Queue\SerializesModels;
 
-class SendNomineeMembershipAcceptSms extends Job implements SelfHandling, ShouldQueue
+class SendCSINomineeMembershipRejectSms extends Job implements SelfHandling, ShouldQueue
 {
     use InteractsWithQueue, SerializesModels;
 
     protected $email;
     protected $mobile;
-    protected $date;
     protected $inst;
 
     /**
@@ -23,11 +22,10 @@ class SendNomineeMembershipAcceptSms extends Job implements SelfHandling, Should
      *
      * @return void
      */
-    public function __construct($email, $mobile, $effective_date, $inst)
+    public function __construct($email, $mobile, $inst)
     {
         $this->email = $email;
         $this->mobile = $mobile;
-        $this->date = $effective_date;
         $this->inst = $inst;
     }
 
@@ -38,7 +36,7 @@ class SendNomineeMembershipAcceptSms extends Job implements SelfHandling, Should
      */
     public function handle() {
 
-        $smstext = "You have been added as CSI Nominee bearing primary login email as {$this->email} for institution: {$this->inst} effective from {$this->date}. Thankyou. http://www.csi-india.org";
+        $smstext = "You have been rejected as CSI Nominee bearing primary login email as {$this->email} for institution: {$this->inst}. Thankyou. http://www.csi-india.org";
         
         $client = new Client();
         $res = $client->request('POST', 'http://203.212.70.200/smpp/sendsms', [

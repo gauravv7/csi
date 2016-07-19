@@ -203,7 +203,7 @@
                                         <td style="padding: 40px 20px; text-align: center; font-family: sans-serif; font-size: 14px; mso-height-rule: exactly; line-height: 20px; color: #555555; border-top: 1px solid #9c9c9c; border-bottom: 1px solid #9c9c9c">
                                             Dear {{$name}},
                                             <br><br>
-                                            You have been added as CSI Nominee bearing primary login Email ID as {{$email}} for institution {{$associating_institution}} effective from <strong>{{$date}}</strong>.
+                                            You have been added as CSI Nominee bearing primary login Email ID as <strong>{{$email}}</strong> for institution <strong>{{$associating_institution}}</strong> effective from <strong>{{$date}}</strong>.
                                         </td>
                                     </tr>
                                 </table>
