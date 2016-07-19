@@ -33,9 +33,9 @@
 
    <div class="row">
       <div class="col-md-3 col-sm-3">
-         
+
          @include('frontend.partials._profileSidebar')
-         
+
       </div>
 
       <div class="col-md-9 col-sm-9">
@@ -72,12 +72,12 @@
                 </div>
               @else
 
-                <div class="alert alert-dismissible alert-warning">
-                  <h4>Payments details submitted by you have not been verified by admin yet</h4>
-                  <p>Your payments are not verified. Please wait use your services, until the same is verified</p>
-                </div>
                 @if(!$reject)
-                   @can('is-individual')
+                     <div class="alert alert-dismissible alert-warning">
+                         <h4>Your membership service have expired</h4>
+                         <p>Your payment for membership service have expired. Please make payment for this service to renew your account.</p>
+                     </div>
+                     @can('is-individual')
                       <div class="row">
                         <div class="col-md-4">
                            <div class="panel dashboard-divs panel-primary">
@@ -89,19 +89,23 @@
                                  </div> <!-- row -->
                                  <div class="row">
                                     <div class="col-md-12">
-                                       <a href={{ route('NomineeView') }} style="color:#fff">
-                                          <span class="pull-left">View Details</span>
+                                       <a href={{ route('NomineeRequestForm',Auth::user()->user()->id) }} style="color:#fff">
+                                          <span class="pull-left">Apply</span>
                                           <span class="pull-right glyphicon glyphicon-chevron-right"></span>
                                           <div class="clearfix"></div>
                                        </a>
                                     </div>
                                  </div> <!-- row -->
-                                 
+
                               </div> <!-- panel-heading -->
                            </div>   <!-- panel -->
-                        </div>   <!-- div.md-4 -->  
+                        </div>   <!-- div.md-4 -->
                       </div>
                    @endcan
+                @else
+                     <div class="alert alert-dismissible alert-warning">
+                         <h4>Payments details submitted by you have not been verified by admin yet</h4>
+                     </div>
                 @endif
              @endif
            @endcan {{-- checkMembershipPaymentValidity --}}

@@ -3,6 +3,7 @@
 namespace App\Http\Controllers;
 
 use App\CsiRequest;
+use App\Enums\ActionStatus;
 use App\Http\Controllers\Controller;
 use App\Http\Requests;
 use App\Payment;
@@ -26,18 +27,35 @@ class UserDashboardController extends Controller
             $payments = Payment::filterByServiceAndMember(1, $user->id)->get();
             $reject = 0;
             $unSettledMembershipPayment = 0;
-            if(!$payments->isEmpty()){
+            if($user->getMembership=='individual' && $user->getMembership->subType=='professional' && $user->getMembership->subType->is_nominee==ActionStatus::approved)
+            {
+                $payments = Payment::filterByServiceAndMember(1, $user->getMembership->subType->institution->member_id)->get();
+                if (!$payments->isEmpty()) {
+                    foreach ($payments as $payment) {
+                        if (($paidDiff = $payment->getPayableDiff()) != 0) {
+                            $unSettledMembershipPayment = 1;
+                        }
+                        foreach ($payment->journals as $journal) {
+                            if ($journal->is_rejected==1) {
+                                $reject = 1;
+                            }
+                        }
+                    }
+
+                }
+            } else if(!$payments->isEmpty()){
                 foreach ($payments as $payment) {
                     if( ($paidDiff = $payment->getPayableDiff()) != 0){
                         $unSettledMembershipPayment = 1;
                     }
                     foreach ($payment->journals as $journal) {
-                        if($journal->is_rejected){
+                        if($journal->is_rejected==1){
                             $reject = 1;
                         }
                     }
                 }
-            } else{
+
+            } else {
                 $unSettledMembershipPayment = 1;
             }
             $isProfileVerified = null;
@@ -47,6 +65,7 @@ class UserDashboardController extends Controller
             return view('frontend.dashboard.home', compact('user', 'paidDiff', 'unSettledMembershipPayment', 'isProfileVerified', 'reject'));
         }
     }
+
 
     /**
      * Show the form for creating a new resource.
