@@ -105,6 +105,87 @@ class RegisterController extends Controller
         }
     }
 
+    public function requestform($id)
+    {
+        $member=Member::find($id);
+        $individual_id = $member->getMembership->id;
+        $prof_member = ProfessionalMember::find($individual_id);
+        $verified_institutions = collect([]);
+    if ($prof_member->hasAssociatingInstitution()->exists() && $prof_member->is_nominee == ActionStatus::pending) {
+        Flash::error('You are already been nominated. Please try again');
+        return redirect()->back();
+    }
+        $institutions = Institution::where('id', '>', 1)->get();
+
+        //checking for institution payment validity
+        foreach ($institutions as $key => $inst){
+            // see if the final amount is zero
+            if($inst->member->checkMembershipPaymentValidity()) {
+
+                $verified_institutions->put($inst->id, $inst->getName());
+            }
+        }
+
+        $verified_institutions->prepend('Please select an associating institution', 'invalid');
+
+
+
+
+        return view('frontend.dashboard.profile.nominee-request', compact('verified_institutions'));
+    }
+
+    public function request($mem_id)
+    {
+        $associating_institution_id=Input::get('associating_institution');
+        if(intval($mem_id)>0) {
+
+            $member=Member::find($mem_id);
+             $individual_id = $member->getMembership->id;
+            $prof_member = $member->getMembership->subType;
+
+            //$prof_individual = Individual::find($individual_id);
+
+            // Payment::filterByServiceAndMember(1, Auth::user()->user()->id)->get();
+            //nominees can be a professional individual only
+
+                if ($member->getMembership->membershipType->type == 'professional') {
+                    $prof = $member->getMembership->subType;
+                    if ($prof_member->hasAssociatingInstitution()->exists() && $prof_member->is_nominee == ActionStatus::approved) {
+                        Flash::error('You are already been nominated. Please try again');
+                    }
+                    else {
+                        $prof_member->associating_institution_id = $associating_institution_id;
+                        $prof_member->is_nominee = ActionStatus::pending;
+                        $prof_member->save();
+
+                        if (App::environment('production')) {
+                            $this->dispatch(new SendNomineeMembershipRejectSms($member->email, $member->getMembership->getMobile(), $prof_member->institution->name));
+                            Mail::queue('frontend.emails.nominee-membership-reject', ['name' => $member->getMembership->getName(), 'email' => $member->email, 'inst' => $nameOfInst], function ($message) use ($member, $emailOfInst, $emailOfHeadInst) {
+                                $message->to($member->email)->subject('CSI-Nominee Membership Registeration');
+                                $message->bcc($emailOfInst)->subject('CSI-Nominee Membership Registeration');
+                                $message->bcc($emailOfHeadInst)->subject('CSI-Nominee Membership Registeration');
+                            });
+                        }
+
+
+                    }
+                } else {
+                    Flash::error('Nominated member of category "' . $member->getFormattedEntity() . '" is not authorized for this action');
+                    return redirect()->route('userDashboard');
+                }
+
+
+
+        }
+        $name=$member->getMembership->getName();
+        $email=$member->email;
+        $aid=$member->getFullID();
+        $associating_institution=$member->getMembership->subType->institution->name;
+        $isPayableBalanced=true;
+
+        return View('frontend.register.register_success_csi_nominee', compact('name', 'email', 'aid', 'isPayableBalanced','associating_institution'));
+    }
+
     /**
      * Store a newly created resource in storage.
      *
@@ -215,8 +296,9 @@ class RegisterController extends Controller
                 $name=$user->getMembership->getName();
                 $email=$user->email;
                 $aid=$user->getFullID();
+                $associating_institution=$user->getMembership->subType->institution->name;
                 $isPayableBalanced=true;
-                return View('frontend.register.register_success_csi_nominee', compact('name', 'email', 'aid', 'isPayableBalanced','prof_member'));
+                return View('frontend.register.register_success_csi_nominee', compact('name', 'email', 'aid', 'isPayableBalanced','associating_institution'));
             }
             return view('frontend.register.payments.create-payment', compact('entity', 'payModes', 'membershipPeriods', 'membership_period', 'paymentMode', 'tno', 'drawn', 'bank', 'branch', 'amountPaid'));
         } else{

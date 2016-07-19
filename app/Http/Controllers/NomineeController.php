@@ -87,6 +87,7 @@ class NomineeController extends Controller
         return view('frontend.dashboard.listing-nominees', compact('statuses','checkbox_array','members','verified','not_verified','rows','page','fromDate','toDate'));
     }
 
+
     /**
      * Show the form for creating a new resource.
      *
@@ -151,6 +152,7 @@ class NomineeController extends Controller
         }
         return redirect()->back();
     }
+
     public function accept($id)
     {
         if(intval($id)>0) {
@@ -161,25 +163,25 @@ class NomineeController extends Controller
             //nominees can be a professional individual only
             if(Auth::user()->user()->getMembership->id== $prof_member->associating_institution_id) {
                 if ($member->getMembership->membershipType->type == 'professional') {
-                    $prof = $member->getMembership->subType;
-                    if ($prof->hasAssociatingInstitution()->exists() && $prof->is_nominee == ActionStatus::approved) {
+
+                    if ($prof_member->hasAssociatingInstitution()->exists() && $prof_member->is_nominee == ActionStatus::approved) {
                         Flash::error('The user has already been nominated. Please try again');
                     } else {
-                        $prof->associating_institution_id = $prof_member->associating_institution_id;
-                        $prof->is_nominee = ActionStatus::approved;
-                        $prof->nominee_effective = Carbon::now()->format('d/m/Y');
-                        $count = ProfessionalMember::where('associating_institution_id', $prof->associating_institution_id)->where('is_nominee', ActionStatus::approved)->count();
+                        //$prof_member->associating_institution_id = $prof_member->associating_institution_id;
+                        $prof_member->is_nominee = ActionStatus::approved;
+                        $prof_member->nominee_effective = Carbon::now()->format('d/m/Y');
+                        $count = ProfessionalMember::where('associating_institution_id', $prof_member->associating_institution_id)->where('is_nominee', ActionStatus::approved)->count();
                         if (!$member->alloted_id) {
                             $member->alloted_id = Payment::getNextAllotedID();
                             $member->save();
                         }
                         if ($count < 3) {
                             if (Auth::user()->user()->checkMembershipPaymentValidity()) {
-                                if ($prof->save()) {
+                                if ($prof_member->save()) {
                                     $nameOfInst = Auth::user()->user()->getMembership->getName();
                                     $emailOfInst = Auth::user()->user()->email;
                                     $emailOfHeadInst = Auth::user()->user()->email;
-                                    $effective_date = $prof->nominee_effective;
+                                    $effective_date = $prof_member->nominee_effective;
                                     if (App::environment('production')) {
                                         $this->dispatch(new SendNomineeMembershipAcceptSms($member->email, $member->getMembership->getMobile(), $effective_date, $nameOfInst));
                                         Mail::queue('frontend.emails.nominee-membership-accept', ['name' => $member->getMembership->getName(), 'email' => $member->email, 'inst' => $nameOfInst, 'date' => $effective_date], function ($message) use ($member, $emailOfInst, $emailOfHeadInst) {
@@ -215,25 +217,25 @@ class NomineeController extends Controller
             //nominees can be a professional individual only
             if(Auth::user()->user()->getMembership->id== $prof_member->associating_institution_id) {
                 if ($member->getMembership->membershipType->type == 'professional') {
-                    $prof = $member->getMembership->subType;
-                    if ($prof->hasAssociatingInstitution()->exists() && $prof->is_nominee == ActionStatus::approved) {
+
+                    if ( $prof_member->hasAssociatingInstitution()->exists() &&  $prof_member->is_nominee == ActionStatus::approved) {
                         Flash::error('The user has already been nominated. Please try again');
                     } else {
 //                    $prof->associating_institution_id = $prof_member->associating_institution_id;
-                        $prof->is_nominee = ActionStatus::approved;
-                        $prof->nominee_effective = Carbon::now()->format('d/m/Y');
-                        $count = ProfessionalMember::where('associating_institution_id', $prof->associating_institution_id)->where('is_nominee', ActionStatus::approved)->count();
+                        $prof_member->is_nominee = ActionStatus::approved;
+                        $prof_member->nominee_effective = Carbon::now()->format('d/m/Y');
+                        $count = ProfessionalMember::where('associating_institution_id',  $prof_member->associating_institution_id)->where('is_nominee', ActionStatus::approved)->count();
                         if (!$member->alloted_id) {
                             $member->alloted_id = Payment::getNextAllotedID();
                             $member->save();
                         }
                         if ($count < 3) {
                             if (Auth::user()->user()->checkMembershipPaymentValidity()) {
-                                if ($prof->save()) {
+                                if ( $prof_member->save()) {
                                     $nameOfInst = Auth::user()->user()->getMembership->getName();
                                     $emailOfInst = Auth::user()->user()->email;
                                     $emailOfHeadInst = Auth::user()->user()->email;
-                                    $effective_date = $prof->nominee_effective;
+                                    $effective_date =  $prof_member->nominee_effective;
                                     if (App::environment('production')) {
                                         $this->dispatch(new SendNomineeMembershipAcceptSms($member->email, $member->getMembership->getMobile(), $effective_date, $nameOfInst));
                                         Mail::queue('frontend.emails.nominee-membership-accept', ['name' => $member->getMembership->getName(), 'email' => $member->email, 'inst' => $nameOfInst, 'date' => $effective_date], function ($message) use ($member, $emailOfInst, $emailOfHeadInst) {
@@ -261,7 +263,7 @@ class NomineeController extends Controller
     public function reject($id)
     {
         if(intval($id)>0){
-            
+
                 $user = ProfessionalMember::find($id);
                 if (!$user) {
                     Flash::error('Nominee doesnot exists');

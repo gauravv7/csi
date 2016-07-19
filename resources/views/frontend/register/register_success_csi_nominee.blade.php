@@ -32,7 +32,7 @@
                         <div class="col-md-12" style="border-left: 2px solid #3f5586;">
                             <p style="    font-style: italic;    font-size: 18px;    text-shadow: 0 0 1px #8A8A8A;">Dear {{$name}},</p>
                             <p>Your application for <strong>Nominee Membership</strong> of <strong>Computer Society of India (CSI)</strong> has been received successfully.</p>
-                            <p>Your Associating Institution for <strong>CSI Nominee Membership</strong> is <strong>{{ $prof_member->institution->getName() }}</strong> .</p>
+                            <p>Your Associating Institution for <strong>CSI Nominee Membership</strong> is <strong>{{ $associating_institution }}</strong> .</p>
                             <p>
                                 Your <strong>Application ID (AID) is {{$aid}}</strong>, which has also been sent by SMS at your registered Mobile Number as well as by email on your <strong>Primary E-Mail ID: {{$email}}</strong>. Kindly remember the same for future reference, and quote the same, while corresponding with us, regarding this request, till the same is verified and approved by us.</p>
                             <p>

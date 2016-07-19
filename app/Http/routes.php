@@ -186,6 +186,7 @@ Route::get('/home', function () {
 
 Route::group(['prefix' => 'register'], function(){
 	Route::get('{entity}', ['as'=>'register', 'uses'=>'RegisterController@create']);
+
 	Route::post('getresource/{resource}', 'RegisterController@getResource');
 	Route::post('{entity}/payments', ['as' => 'submitToPayments', 'uses' => 'RegisterController@submitToPayments']);
 	Route::group(['prefix' => '{entity}', 'middleware' => 'auth'], function(){
@@ -193,6 +194,9 @@ Route::group(['prefix' => 'register'], function(){
 		Route::post('/payments/{mode}', ['as' => 'CreatePayments', 'uses' => 'RegisterController@store']);
 	});
 });
+
+Route::get('/{id}/nominee-request-form', ['middleware' => 'auth.individual', 'as' => 'NomineeRequestForm', 'uses' => 'RegisterController@requestform']);
+Route::post('/{id}/nominee-request', ['middleware' => 'auth.individual', 'as' => 'NomineeRequest', 'uses' => 'RegisterController@request']);
 
 Route::group(['prefix' => 'payments'], function(){
 	Route::get('/', ['as' => 'viewAllMembershipPayments', 'uses' => 'MembershipPaymentController@index']);
@@ -248,6 +252,8 @@ Route::group(['middleware'=>'checkUserPaymentsVerified'], function(){
 		Route::get('/{id}/remove', ['as' => 'NomineeRemove', 'uses' => 'NomineeController@remove']);
 		Route::get('/{id}/renew', ['as' => 'NomineeRenew', 'uses' => 'NomineeController@renew']);
 		Route::get('/{id}/delete', ['as' => 'NomineeDelete', 'uses' => 'NomineeController@destroy']);
+
+
 	});
 
 	Route::group(['prefix' => 'student-branch', 'middleware' =>'auth'], function(){
@@ -277,6 +283,7 @@ Route::group(['prefix' => 'userprofile', 'middleware'=>'auth'], function(){
 });
 
 Route::get('/dashboard', ['middleware'=>['auth'], 'as' => 'userDashboard', 'uses'=>'UserDashboardController@index']);
+
 
 Route::get('/payments-not-verified', ['middleware'=>['auth'], 'as' => 'userDashboard', 'uses'=>'UserDashboardController@index']);
 
