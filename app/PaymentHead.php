@@ -3,6 +3,7 @@
 namespace App;
 
 use Illuminate\Database\Eloquent\Model;
+use App\MyHelpers\HFunctions;
 
 class PaymentHead extends Model
 {
@@ -27,12 +28,13 @@ class PaymentHead extends Model
     
     public function getFormattedAmount(){
         ($this->currency->currency_code == 'INR')? setlocale(LC_MONETARY, 'en_IN'): setlocale(LC_MONETARY, 'en_US');
-        return money_format('%i', $this->amount);
+        return (function_exists('money_format'))? money_format('%i', $this->amount): HFunctions::money_format('%i', $this->amount);
     }
 
     public function getFormattedCalculatedAmount($calculated_amount){
         ($this->currency->currency_code == 'INR')? setlocale(LC_MONETARY, 'en_IN'): setlocale(LC_MONETARY, 'en_US');
-        return money_format('%i', $calculated_amount);
+        return (function_exists('money_format'))? money_format('%i', $calculated_amount): HFunctions::money_format('%i', $calculated_amount);
+
     }
 
     public function calculatePayable(){
