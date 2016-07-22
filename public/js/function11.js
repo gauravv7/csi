@@ -168,7 +168,7 @@ $(document).ready(function(){
         changeYear: true,
         maxDate: professionalLastDate,
         hideIfNoPrevNext: true,
-        yearRange: '-35:-21'
+        yearRange: '-45:-21'
     }).val();
 });
 //for-steps magic
