@@ -9,7 +9,7 @@
 	</div>
 	<div class="row">
 			<div class="col-md-4 form-group">
-				@if ( ($entity == 'individual-student') || ($entity == 'individual-professional'))
+				@if ( ($entity == 'individual-student') || ($entity == 'individual-professional')|| ($entity == 'nominee'))
 					<label for="exampleInputPassword1">Landline</label>
 				@else
 					<label for="exampleInputPassword1" class="req">Landline*</label>
@@ -38,7 +38,7 @@
 				</div>
 			</div>
 	</div>
-		@if ( ($entity == 'individual-student') || ($entity == 'individual-professional'))
+		@if ( ($entity == 'individual-student') || ($entity == 'individual-professional') || ($entity == 'nominee'))
 
 			<div class="row">
 				<div class="col-md-4 form-group">

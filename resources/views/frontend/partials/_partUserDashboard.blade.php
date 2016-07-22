@@ -105,7 +105,7 @@
                <div class="row">
                   <div class="col-md-12">
                      <a href={{ route('RequestStudentBranch') }} style="color:#fff">
-                        <span class="pull-left">Send Request</span>
+                        <span class="pull-left">Send Request/View Requests</span>
                         <span class="pull-right glyphicon glyphicon-chevron-right"></span>
                         <div class="clearfix"></div>
                      </a>

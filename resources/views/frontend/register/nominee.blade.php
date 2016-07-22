@@ -105,15 +105,10 @@
 
                     <div class="steps">
                         <div class="form-group">
-                            <label for="country" class="req">Associating Institute*</label>
+                            <label for="associating_institution" class="req">Organisation Name*</label>
 
                             {!! Form::select('associating_institution', $verified_institutions,null, array('class'=>"form-control", 'id'=>"institution", 'data-form'=>"0")) !!}
 
-                        </div>
-
-                        <div class="form-group">
-                            <label class="control-label req">Organisation Name*</label>
-                            {!! Form::text('organisation', null, ['class' => 'form-control', 'placeholder' => 'Enter your organisation name']) !!}
                         </div>
                         <div class="form-group">
                             <label class="control-label req">Designation*</label>

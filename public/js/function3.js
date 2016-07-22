@@ -282,8 +282,8 @@ function mainBarScrollHandler(element){
 //datepicker ui settings
 $(document).ready(function(){
 	var today = new Date();
-	var studentLastDate = new Date(today.getFullYear() -15, 1, 1);
-	var professionalLastDate = new Date(today.getFullYear() -18, 1, 1);
+	var studentLastDate = new Date(today.getFullYear() -15, 31, 12);
+	var professionalLastDate = new Date(today.getFullYear() -21, 31, 12);
 	
 	$("#dob_student").datepicker({
 		dateFormat : 'yy-mm-dd',

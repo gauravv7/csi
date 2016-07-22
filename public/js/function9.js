@@ -167,15 +167,15 @@ $(document).ready(function() {
 //datepicker ui settings
 $(document).ready(function(){
 	var today = new Date();
-	var studentLastDate = new Date(today.getFullYear() -15, 1, 1);
+	var studentLastDate = new Date(today.getFullYear() -15, 31, 12);
 	
 	$("#dob_student").datepicker({
 		dateFormat : 'dd/mm/yy',
 		changeMonth: true,
 	    changeYear: true, 
-	    maxDate: today,
+	    maxDate: studentLastDate,
 	    hideIfNoPrevNext: true,
-	    yearRange:  "-30:+0"
+	    yearRange:  "-30:-15"
 	}).val();
 	$("#drawn_on").datepicker({
         changeMonth: true,

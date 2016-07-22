@@ -126,6 +126,12 @@ var formElements = [
 	},
 	//dont ask now seriously
 	{
+		"associating_institution": {
+			rule: [
+				'required',
+
+			]
+		},
 		"organisation": {
 			rule: [
 				'required',
@@ -154,15 +160,15 @@ $(document).ready(function() {
 //datepicker ui settings
 $(document).ready(function(){
 	var today = new Date();
-	var professionalLastDate = new Date(today.getFullYear() -28, 1, 1);
+	var professionalLastDate = new Date(today.getFullYear() -21, 31, 12);
 
 	$("#dob_professional").datepicker({
 		dateFormat : 'dd/mm/yy',
 		changeMonth: true,
 	    changeYear: true, 
-	    maxDate: today,
+	    maxDate: professionalLastDate,
 	    hideIfNoPrevNext: true,
-	    yearRange: '-35:+0'
+	    yearRange: '-45:-21'
 	}).val();
 	$("#drawn_on").datepicker({
         changeMonth: true,

@@ -83,27 +83,32 @@ class RegisterController extends Controller
             } else if( ( $entity == 'individual-student' ) ){
                 return view('frontend.register.individual-student', compact('entity', 'titles','countries', 'country_code', 'isSingleStep'));
             } else if( ( $entity == 'individual-professional' ) ){
-                return view('frontend.register.individual-professional', compact('entity', 'titles', 'countries', 'country_code', 'isSingleStep'));
+                $verified_institutions=$this->verifiedInstitutions();
+                return view('frontend.register.individual-professional', compact('verified_institutions','entity', 'titles', 'countries', 'country_code', 'isSingleStep'));
             } else if( ( $entity == 'nominee' ) ){
-                $institutions = Institution::where('id', '>', 1)->get();
-                $verified_institutions = collect([]);
-                //checking for institution payment validity
-                foreach ($institutions as $key => $inst){
-                    // see if the final amount is zero
-                    if($inst->member->checkMembershipPaymentValidity()) {
-
-                        $verified_institutions->put($inst->id, $inst->getName());
-                    }
-                }
-
-                $verified_institutions->prepend('Please select an associating institution', 'invalid');
-
+                $verified_institutions=$this->verifiedInstitutions();
                 return view('frontend.register.nominee', compact('verified_institutions','entity', 'titles', 'countries', 'country_code', 'isSingleStep'));
             }
         } else{
             Flash::info('you are already registered');
             return redirect()->route('userDashboard');
         }
+    }
+    public function verifiedInstitutions(){
+        $institutions = Institution::where('id', '>', 1)->get();
+        $verified_institutions = collect([]);
+        //checking for institution payment validity
+        foreach ($institutions as $key => $inst){
+            // see if the final amount is zero
+            if($inst->member->checkMembershipPaymentValidity()) {
+
+                $verified_institutions->put($inst->id, $inst->getName());
+            }
+        }
+
+        $verified_institutions->prepend('Please select an associating institution', 'invalid');
+        return $verified_institutions;
+
     }
 
     public function requestform($id)
@@ -116,18 +121,7 @@ class RegisterController extends Controller
         Flash::error('You are already been nominated. Please try again');
         return redirect()->back();
     }
-        $institutions = Institution::where('id', '>', 1)->get();
-
-        //checking for institution payment validity
-        foreach ($institutions as $key => $inst){
-            // see if the final amount is zero
-            if($inst->member->checkMembershipPaymentValidity()) {
-
-                $verified_institutions->put($inst->id, $inst->getName());
-            }
-        }
-
-        $verified_institutions->prepend('Please select an associating institution', 'invalid');
+        $verified_institutions=$this->verifiedInstitutions();
 
 
 
@@ -271,12 +265,17 @@ class RegisterController extends Controller
 
 
         if ($user){
+            $category=$user->getFormattedEntity();
+            if($entity == 'nominee'){
+                $category=$category.'/Nominee';
+
+            }
 
             Auth::user()->login($user);
             if(App::environment('production')){
                 $rid = RequestService::requestsByMemberIdAndServiceId($user->id, Service::getServiceIDByType('membership'))->first()->id;
                 $this->dispatch(new SendMembershipRegisterFormSms($rid, $user->email, $user->getMembership->getMobile(), $entity, $str_password));
-                Mail::queue('frontend.emails.membership-register-form', ['name' => $user->getMembership->getName(), 'email' => $user->email, 'rid' => $rid, 'category' => $user->getFormattedEntity(), 'password' => $str_password], function($message) use($user){
+                Mail::queue('frontend.emails.membership-register-form', ['name' => $user->getMembership->getName(), 'email' => $user->email, 'rid' => $rid, 'category' =>$category , 'password' => $str_password], function($message) use($user){
                     $message->to($user->email)->subject('CSI-Membership Registeration');
                     if($user->membership_id==1){
                         $message->cc($user->getMembership->email)->subject('CSI-Membership Registeration');

@@ -160,15 +160,15 @@ $(document).ready(function() {
 //datepicker ui settings
 $(document).ready(function(){
     var today = new Date();
-    var professionalLastDate = new Date(today.getFullYear() -28, 1, 1);
+    var professionalLastDate = new Date(today.getFullYear() -21, 31, 12);
 
     $("#dob_professional").datepicker({
         dateFormat : 'dd/mm/yy',
         changeMonth: true,
         changeYear: true,
-        maxDate: today,
+        maxDate: professionalLastDate,
         hideIfNoPrevNext: true,
-        yearRange: '-35:+0'
+        yearRange: '-35:-21'
     }).val();
 });
 //for-steps magic
