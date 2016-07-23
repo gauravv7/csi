@@ -812,7 +812,7 @@ class RegisterController extends Controller
             $mobile = Input::get('mobile');
 
             $associating_institution_id=Input::get('associating_institution');
-            $organisation = Input::get('organisation');
+
             $designation = Input::get('designation');
             $employee_id = Input::file('employee_id');
 
@@ -863,12 +863,14 @@ class RegisterController extends Controller
             $filename = $member->id.'-'.$member->membership_id.'.';
             $filename.=$employee_id->getClientOriginalExtension();
             $employee_id->move(storage_path('uploads/profile_proofs'), $filename);
+            $organisation=Institution::find($associating_institution_id);
+
 
 
             ProfessionalMember::create([
                 'id' => $individual->id,
                 'associating_institution_id'=>$associating_institution_id,
-                'organisation' => $organisation,
+                'organisation' => $organisation->getName(),
                 'designation' => $designation,
                 'is_nominee'=>ActionStatus::pending,
                 'proof_id' => $filename,
