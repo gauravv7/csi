@@ -132,12 +132,7 @@ var formElements = [
 
             ]
         },
-        "organisation": {
-            rule: [
-                'required',
-                'text'
-            ]
-        },
+       
         "designation": {
             rule: [
                 'required',
