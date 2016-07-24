@@ -90,7 +90,7 @@
                                  <div class="row">
                                     <div class="col-md-12">
                                        <a href={{ route('NomineeRequestForm',Auth::user()->user()->id) }} style="color:#fff">
-                                          <span class="pull-left">Apply</span>
+                                          <span class="pull-left">View Details</span>
                                           <span class="pull-right glyphicon glyphicon-chevron-right"></span>
                                           <div class="clearfix"></div>
                                        </a>

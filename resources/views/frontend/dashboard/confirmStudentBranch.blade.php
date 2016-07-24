@@ -52,7 +52,7 @@
                     </h5>
                 @elseif(Auth::user()->user()->getMembership->subType->is_student_branch == 1)
                     <h4>
-                      REQUEST APPROVED
+                      REQUEST RECEIVED.
                     </h4>
                 @endif
 

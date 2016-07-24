@@ -168,14 +168,14 @@ $(document).ready(function() {
 $(document).ready(function(){
 	var today = new Date();
 	var studentLastDate = new Date(today.getFullYear() -15, 31, 12);
+	var startRange=today.getFullYear()-1900;
 	
 	$("#dob_student").datepicker({
 		dateFormat : 'dd/mm/yy',
 		changeMonth: true,
-	    changeYear: true, 
-	    maxDate: studentLastDate,
+	    changeYear: true,
+		maxDate: studentLastDate,
 	    hideIfNoPrevNext: true,
-	    yearRange:  "-30:-15"
 	}).val();
 	$("#drawn_on").datepicker({
         changeMonth: true,

@@ -8,7 +8,7 @@ use App\Http\Controllers\Controller;
 use App\Http\Requests;
 use App\Http\Requests\CreateNomineeRequest;
 use App\Jobs\SendNomineeMembershipAcceptSms;
-use App\Jobs\SendNomineeMembershipRejectSms;
+//use App\Jobs\SendNomineeMembershipRejectSms;
 use App\Jobs\SendCSINomineeMembershipAcceptSms;
 use App\Jobs\SendCSINomineeMembershipRejectSms;
 use App\Jobs\SendNomineeMembershipRemoveSms;

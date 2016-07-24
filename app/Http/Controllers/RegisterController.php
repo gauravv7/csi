@@ -117,10 +117,10 @@ class RegisterController extends Controller
         $individual_id = $member->getMembership->id;
         $prof_member = ProfessionalMember::find($individual_id);
         $verified_institutions = collect([]);
-    if ($prof_member->hasAssociatingInstitution()->exists() && $prof_member->is_nominee == ActionStatus::pending) {
-        Flash::error('You are already been nominated. Please try again');
-        return redirect()->back();
-    }
+        if ($prof_member->hasAssociatingInstitution()->exists() && $prof_member->is_nominee == ActionStatus::pending) {
+            Flash::error('You are already been nominated. Please try again');
+            return redirect()->back();
+        }
         $verified_institutions=$this->verifiedInstitutions();
 
 
@@ -134,48 +134,51 @@ class RegisterController extends Controller
         $associating_institution_id=Input::get('associating_institution');
         if(intval($mem_id)>0) {
 
-            $member=Member::find($mem_id);
-             $individual_id = $member->getMembership->id;
-            $prof_member = $member->getMembership->subType;
+            $user=Member::find($mem_id);
+            if ($user->getMembership->membershipType->type == 'professional') {
+                $prof_member = $user->getMembership->subType;
+                if ($prof_member->hasAssociatingInstitution()->exists() &&( $prof_member->is_nominee == ActionStatus::approved ||$prof_member->is_nominee == ActionStatus::pending )) {
+                    Flash::error('You are already been nominated. Please try again');
+                }
+                else {
+                    $prof_member->associating_institution_id = $associating_institution_id;
+                    $prof_member->is_nominee = ActionStatus::pending;
+                    if ($prof_member->save()) {
 
-            //$prof_individual = Individual::find($individual_id);
+                        $name = $user->getMembership->getName();
+                        $email = $user->email;
+                        $aid = $user->getFullID();
+                        $associating_institution = $user->getMembership->subType->institution->getName();
+                        $associating_institution_email = $user->getMembership->subType->institution->member->email;
+                        $emailOfHeadInst = $user->getMembership->email;
 
-            // Payment::filterByServiceAndMember(1, Auth::user()->user()->id)->get();
-            //nominees can be a professional individual only
-
-                if ($member->getMembership->membershipType->type == 'professional') {
-                    $prof = $member->getMembership->subType;
-                    if ($prof_member->hasAssociatingInstitution()->exists() && $prof_member->is_nominee == ActionStatus::approved) {
-                        Flash::error('You are already been nominated. Please try again');
-                    }
-                    else {
-                        $prof_member->associating_institution_id = $associating_institution_id;
-                        $prof_member->is_nominee = ActionStatus::pending;
-                        $prof_member->save();
 
                         if (App::environment('production')) {
-                            $this->dispatch(new SendNomineeMembershipRejectSms($member->email, $member->getMembership->getMobile(), $prof_member->institution->name));
-                            Mail::queue('frontend.emails.nominee-membership-reject', ['name' => $member->getMembership->getName(), 'email' => $member->email, 'inst' => $nameOfInst], function ($message) use ($member, $emailOfInst, $emailOfHeadInst) {
-                                $message->to($member->email)->subject('CSI-Nominee Membership Registeration');
-                                $message->bcc($emailOfInst)->subject('CSI-Nominee Membership Registeration');
-                                $message->bcc($emailOfHeadInst)->subject('CSI-Nominee Membership Registeration');
+                            $phone = $user->phone->first();
+                            $mobile = $phone->mobile;
+                            $this->dispatch(new SendNomineeMembershipRegisterSms($email, $mobile, $associating_institution));
+                            Mail::queue('frontend.emails.nominee-requests.nominee-register', ['name' => $name, 'email' => $email, 'aid' => $aid, 'associating_institution' => $associating_institution], function ($message) use ($user, $associating_institution_email, $emailOfHeadInst) {
+                                $message->to($user->email)
+                                    ->bcc($associating_institution_email)
+                                    ->bcc($emailOfHeadInst)
+                                    ->subject('CSI-Nominee Membership Registeration');
                             });
                         }
-
-
                     }
-                } else {
-                    Flash::error('Nominated member of category "' . $member->getFormattedEntity() . '" is not authorized for this action');
-                    return redirect()->route('userDashboard');
+
                 }
+            } else {
+                Flash::error('Nominated member of category "' . $user->getFormattedEntity() . '" is not authorized for this action');
+                return redirect()->route('userDashboard');
+            }
 
 
 
         }
-        $name=$member->getMembership->getName();
-        $email=$member->email;
-        $aid=$member->getFullID();
-        $associating_institution=$member->getMembership->subType->institution->name;
+        $name=$user->getMembership->getName();
+        $email=$user->email;
+        $aid=$user->getFullID();
+        $associating_institution=$user->getMembership->subType->institution->name;
         $isPayableBalanced=true;
 
         return View('frontend.register.register_success_csi_nominee', compact('name', 'email', 'aid', 'isPayableBalanced','associating_institution'));
@@ -250,18 +253,13 @@ class RegisterController extends Controller
         } else if ( ( $entity == 'individual-professional') ) {
             $user = $this->storeProfessionalIndividualMemberData($password);
         } else if ( ( $entity == 'nominee') ) {
-            $user1 = $this->storeNomineeMemberData($password);
-            $user=Member::find($user1[0]);
-
+            $user = $this->storeNomineeMemberData($password);
         }
         if ($user){
             $category=$user->getFormattedEntity();
             if($entity == 'nominee'){
-                $prof_member=ProfessionalMember::find($user1[1]);
                 $category=$category.'/Nominee';
-
             }
-
             Auth::user()->login($user);
             if(App::environment('production')){
                 $rid = RequestService::requestsByMemberIdAndServiceId($user->id, Service::getServiceIDByType('membership'))->first()->id;
@@ -269,7 +267,7 @@ class RegisterController extends Controller
                 Mail::queue('frontend.emails.membership-register-form', ['name' => $user->getMembership->getName(), 'email' => $user->email, 'rid' => $rid, 'category' =>$category , 'password' => $str_password], function($message) use($user){
                     $message->to($user->email)->subject('CSI-Membership Registeration');
                     if($user->membership_id==1){
-                        $message->cc($user->getMembership->email)->subject('CSI-Membership Registeration');
+                        $message->cc($user->email)->subject('CSI-Membership Registeration');
                     }
                 });
             }
@@ -290,17 +288,17 @@ class RegisterController extends Controller
                 $associating_institution=$user->getMembership->subType->institution->getName();
                 $associating_institution_email=$user->getMembership->subType->institution->member->email;
                 $isPayableBalanced=true;
-                
-                
+
+
                 if(App::environment('production')){
                     $phone = $user->phone->first();
                     $mobile = $phone->mobile;
                     $this->dispatch(new SendNomineeMembershipRegisterSms( $email, $mobile,$associating_institution));
                     Mail::queue('frontend.emails.nominee-requests.nominee-register', ['name' => $name, 'email' => $email, 'aid' => $aid,'associating_institution'=>$associating_institution], function($message) use($user, $associating_institution_email){
-                        $message->to($user->email)->bcc($associating_institution_email)->subject('CSI-Membership');
+                        $message->to($user->email)->bcc($associating_institution_email)->subject('CSI-Nominee Membership Registeration');
                     });
                 }
-                
+
                 return View('frontend.register.register_success_csi_nominee', compact('name', 'email', 'aid', 'isPayableBalanced','associating_institution'));
             }
             return view('frontend.register.payments.create-payment', compact('entity', 'payModes', 'membershipPeriods', 'membership_period', 'paymentMode', 'tno', 'drawn', 'bank', 'branch', 'amountPaid'));
@@ -876,9 +874,9 @@ class RegisterController extends Controller
                 'request_id' => $request->id,
                 'status' => ActionStatus::pending
             ]);
-            $member_profmember=[$member->id,$individual->id];
 
-            return $member_profmember;
+
+            return $member;
         });
         return $var;
     }
