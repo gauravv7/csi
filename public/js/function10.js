@@ -161,11 +161,15 @@ $(document).ready(function() {
 $(document).ready(function(){
 	var today = new Date();
 
+	var professionalLastDate = new Date(today.getFullYear() -21, 31,12);
+	var startRange=today.getFullYear()-1900;
+
 
 	$("#dob_professional").datepicker({
 		dateFormat : 'dd/mm/yy',
 		changeMonth: true,
 	    changeYear: true,
+		//minDate:new Date(1900,01,01),
 	    maxDate: professionalLastDate,
 	    hideIfNoPrevNext: true,
 		yearRange:  '-'+startRange+':-21'
