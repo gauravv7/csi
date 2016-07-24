@@ -251,22 +251,13 @@ class RegisterController extends Controller
             $user = $this->storeProfessionalIndividualMemberData($password);
         } else if ( ( $entity == 'nominee') ) {
             $user1 = $this->storeNomineeMemberData($password);
-        }
-
-        //What to do for Nominee Now
-        if ( ( $entity == 'nominee') ){
             $user=Member::find($user1[0]);
-            $prof_member=ProfessionalMember::find($user1[1]);
+
         }
-
-
-
-
-
-
         if ($user){
             $category=$user->getFormattedEntity();
             if($entity == 'nominee'){
+                $prof_member=ProfessionalMember::find($user1[1]);
                 $category=$category.'/Nominee';
 
             }
