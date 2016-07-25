@@ -137,7 +137,7 @@ class RegisterController extends Controller
             $user=Member::find($mem_id);
             if ($user->getMembership->membershipType->type == 'professional') {
                 $prof_member = $user->getMembership->subType;
-                if ($prof_member->hasAssociatingInstitution()->exists() &&( $prof_member->is_nominee == ActionStatus::approved ||$prof_member->is_nominee == ActionStatus::pending )) {
+                if ( $prof_member->is_nominee == ActionStatus::approved ||$prof_member->is_nominee == ActionStatus::pending ) {
                     Flash::error('You are already been nominated. Please try again');
                 }
                 else {
@@ -150,8 +150,7 @@ class RegisterController extends Controller
                         $aid = $user->getFullID();
                         $associating_institution = $user->getMembership->subType->institution->getName();
                         $associating_institution_email = $user->getMembership->subType->institution->member->email;
-                        $emailOfHeadInst = $user->getMembership->email;
-
+                        $emailOfHeadInst = $user->getMembership->subType->institution->email;
 
                         if (App::environment('production')) {
                             $phone = $user->phone->first();
@@ -289,10 +288,13 @@ class RegisterController extends Controller
                 $associating_institution_email=$user->getMembership->subType->institution->member->email;
                 $isPayableBalanced=true;
 
-
                 if(App::environment('production')){
                     $phone = $user->phone->first();
                     $mobile = $phone->mobile;
+                    $this->dispatch(new SendRegisterSms($aid, $email, $mobile));
+                    Mail::queue('frontend.emails.individual_register', ['name' => $name, 'email' => $email, 'aid' => $aid], function($message) use($user){
+                        $message->to($user->email)->subject('CSI-Membership');
+                    });
                     $this->dispatch(new SendNomineeMembershipRegisterSms( $email, $mobile,$associating_institution));
                     Mail::queue('frontend.emails.nominee-requests.nominee-register', ['name' => $name, 'email' => $email, 'aid' => $aid,'associating_institution'=>$associating_institution], function($message) use($user, $associating_institution_email){
                         $message->to($user->email)->bcc($associating_institution_email)->subject('CSI-Nominee Membership Registeration');
