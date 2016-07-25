@@ -130,7 +130,7 @@ class NomineeController extends Controller
                 if($count<3){
                     if( Auth::user()->user()->checkMembershipPaymentValidity() ){
                         if( $prof->save() ){
-                            $nameOfInst = Auth::user()->user()->getMembership->getName;
+                            $nameOfInst = Auth::user()->user()->getMembership->getName();
                             $emailOfInst = Auth::user()->user()->email;
                             $emailOfHeadInst = Auth::user()->user()->email;
                             $effective_date = $prof->nominee_effective;
@@ -181,10 +181,10 @@ class NomineeController extends Controller
                         if ($count < 3) {
                             if (Auth::user()->user()->checkMembershipPaymentValidity()) {
                                 if ($prof_member->save()) {
-                                    $name=$prof_member->individual->getName;
+                                    $name=$prof_member->individual->getName();
                                     $email=$member->email;
                                     $mobile=$member->phone->first();
-                                    $nameOfInst = $prof_member->institution->getName;
+                                    $nameOfInst = $prof_member->institution->getName();
                                     $emailOfInst = $prof_member->institution->member->email;
                                     $emailOfHeadInst = $prof_member->institution->email;
                                     $effective_date = $prof_member->nominee_effective;
@@ -237,10 +237,10 @@ class NomineeController extends Controller
                         if ($count < 3) {
                             if (Auth::user()->user()->checkMembershipPaymentValidity()) {
                                 if ($prof_member->save()) {
-                                    $name=$prof_member->individual->getName;
+                                    $name=$prof_member->individual->getName();
                                     $email=$member->email;
                                     $mobile=$member->phone->first();;
-                                    $nameOfInst = $prof_member->institution->getName;
+                                    $nameOfInst = $prof_member->institution->getName();
                                     $emailOfInst = $prof_member->institution->member->email;
                                     $emailOfHeadInst = $prof_member->institution->email;
                                     $effective_date = $prof_member->nominee_effective;
@@ -281,7 +281,7 @@ class NomineeController extends Controller
                     if ($prof_member->is_nominee == ActionStatus::pending && $prof_member->associating_institution_id == Auth::user()->user()->getMembership->id) {
                         $prof_member->is_nominee = ActionStatus::nothing;
                         if ($prof_member->save()) {
-                            $nameOfInst = $prof_member->institution->getName;
+                            $nameOfInst = $prof_member->institution->getName();
                             $emailOfInst = $prof_member->institution->member->email;
                             $emailOfHeadInst = $prof_member->institution->email;
                             $effective_date = $prof_member->nominee_effective;
@@ -320,7 +320,7 @@ class NomineeController extends Controller
                     if ($user->is_nominee == ActionStatus::approved && $user->associating_institution_id == Auth::user()->user()->getMembership->id) {
                         $user->is_nominee = ActionStatus::cancelled;
                         if ($user->save()) {
-                            $nameOfInst = $user->institution->getName;
+                            $nameOfInst = $user->institution->getName();
                             $emailOfInst = $user->institution->member->email;
                             $emailOfHeadInst = $user->institution->email;
                             $effective_date = $user->nominee_effective;
