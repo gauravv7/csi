@@ -183,13 +183,13 @@ class NomineeController extends Controller
                                 if ($prof_member->save()) {
                                     $name=$prof_member->individual->getName();
                                     $email=$member->email;
-                                    $mobile=$member->phone->first();
+
                                     $nameOfInst = $prof_member->institution->getName();
                                     $emailOfInst = $prof_member->institution->member->email;
                                     $emailOfHeadInst = $prof_member->institution->email;
                                     $effective_date = $prof_member->nominee_effective;
                                     if (App::environment('production')) {
-                                        $this->dispatch(new SendCSINomineeMembershipAcceptSms($email, $mobile, $effective_date, $nameOfInst));
+                                        $this->dispatch(new SendCSINomineeMembershipAcceptSms($email, $member->getMembership->getMobile(), $effective_date, $nameOfInst));
                                         Mail::queue('frontend.emails.nominee-requests.nominee-accept', ['name' => $name, 'email' => $email, 'associating_institution' => $nameOfInst, 'date' => $effective_date], function ($message) use ($email, $emailOfInst, $emailOfHeadInst) {
                                             $message->to($email)->subject('CSI-Nominee Membership Registeration');
                                             $message->bcc($emailOfInst)->subject('CSI-Nominee Membership Registeration');
@@ -239,13 +239,13 @@ class NomineeController extends Controller
                                 if ($prof_member->save()) {
                                     $name=$prof_member->individual->getName();
                                     $email=$member->email;
-                                    $mobile=$member->phone->first();;
+
                                     $nameOfInst = $prof_member->institution->getName();
                                     $emailOfInst = $prof_member->institution->member->email;
                                     $emailOfHeadInst = $prof_member->institution->email;
                                     $effective_date = $prof_member->nominee_effective;
                                     if (App::environment('production')) {
-                                        $this->dispatch(new SendNomineeMembershipRenewSms($email, $mobile, $effective_date, $nameOfInst));
+                                        $this->dispatch(new SendNomineeMembershipRenewSms($email, $member->getMembership->getMobile(), $effective_date, $nameOfInst));
                                         Mail::queue('frontend.emails.nominee-requests.nominee-renew', ['name' => $name, 'email' => $email, 'associating_institution' => $nameOfInst, 'date' => $effective_date], function ($message) use ($email, $emailOfInst, $emailOfHeadInst) {
                                             $message->to($email)->subject('CSI-Nominee Membership Registeration');
                                             $message->bcc($emailOfInst)->subject('CSI-Nominee Membership Registeration');
