@@ -172,9 +172,7 @@
             <!-- Email Header : BEGIN -->
             <table cellspacing="0" cellpadding="0" border="0" align="left" width="100%" style="max-width: 680px;">
                 <tr>
-                    <td style="padding: 1.2em 0; text-align: right; width: 200px">
-                        <img src={{ $message->embed(public_path('img/csi-logo.png')) }} width="100" height="100" alt="alt_text" border="0">
-                    </td>
+                    
                     <td style="padding: 0.8em; text-align: left; font-family: sans-serif; font-size: 28px; mso-height-rule: exactly; line-height: 1.2em; color: #555555;">
                         Computer Society of India
                     </td>
@@ -207,7 +205,11 @@
                                     <br><br>
                                     Your <strong>Application ID (AID): {{$aid}}</strong>, which has also been sent by SMS at your registered Mobile Number. Kindly remember the same for future reference, and quote the same, while corresponding with us, regarding this request, till the same is verified and approved by us.
                                     <br/>
-                                    Please note that we shall be verifying the credentials provided by you in your application form including the payment details and upon successful verification of the same, your membership request would be approved. Such requests are normally resolved within a period of two weeks. If you do not hear anything from us, within two weeks, kindly contact us at <strong>helpdesk@csi-india.org</strong>, giving your <strong>AID</strong> to enable us to track the status of your request and reply you back accordingly.
+                                    @if($entity=='individual-professional'||$entity=='individual-student')
+                                    @include('frontend.emails.payment_details')
+                                    @endif
+                                    <br/>
+                                    Please note that we shall be verifying the credentials provided by you in your application form <strong> including the payment details </strong>and upon successful verification of the same, your membership request would be approved. Such requests are normally resolved within a period of two weeks. If you do not hear anything from us, within two weeks, kindly contact us at <strong>helpdesk@csi-india.org</strong>, giving your <strong>AID</strong> to enable us to track the status of your request and reply you back accordingly.
                                     <br><br>
                                     After approval of your request, you will receive a <strong>Confirmation E-Mail</strong> as well as an <strong>SMS</strong> on your registered <strong>Mobile Number</strong> and above mentioned <strong>Primary E-Mail ID</strong>, which will have the details like your <strong>CSI Membership No., User ID</strong> and the <strong>Password</strong>, using which you will be able to login to the web-portal <strong>www.csi-india.org</strong> and avail membership services. Once, your membership is approved and you receive the required credentials, you can login at our web-portal and then can <strong>Add / Edit / Remove</strong> details of your Institutional Nominees, update the profile of your Institution, from time to time, and can also submit request for opening up of CSI Students’ Branch at your Institution.
                                 </td>

@@ -286,22 +286,27 @@ class RegisterController extends Controller
                 $aid=$user->getFullID();
                 $associating_institution=$user->getMembership->subType->institution->getName();
                 $associating_institution_email=$user->getMembership->subType->institution->member->email;
+                
                 $isPayableBalanced=true;
 
                 if(App::environment('production')){
                     $phone = $user->phone->first();
                     $mobile = $phone->mobile;
                     $this->dispatch(new SendRegisterSms($aid, $email, $mobile));
-                    Mail::queue('frontend.emails.individual_register', ['name' => $name, 'email' => $email, 'aid' => $aid], function($message) use($user){
+                    Mail::queue('frontend.emails.individual_register', ['name' => $name, 'email' => $email, 'aid' => $aid,'entity'=>$entity], function($message) use($user){
                         $message->to($user->email)->subject('CSI-Membership');
                     });
                     $this->dispatch(new SendNomineeMembershipRegisterSms( $email, $mobile,$associating_institution));
-                    Mail::queue('frontend.emails.nominee-requests.nominee-register', ['name' => $name, 'email' => $email, 'aid' => $aid,'associating_institution'=>$associating_institution], function($message) use($user, $associating_institution_email){
-                        $message->to($user->email)->bcc($associating_institution_email)->subject('CSI-Nominee Membership Registeration');
+                    Mail::queue('frontend.emails.nominee-requests.nominee-register', ['name' => $name, 'email' => $email, 'aid' => $aid,'associating_institution'=>$associating_institution], function($message) use($email){
+                        $message->to($email)->subject('CSI-Nominee Membership Registeration');
+                    });
+                    Mail::queue('frontend.emails.nominee-requests.nominee-register', ['name' => $name, 'email' => $email, 'aid' => $aid,'associating_institution'=>$associating_institution], function($message) use($associating_institution_email){
+                        $message->to($associating_institution_email)->subject('CSI-Nominee Membership Registeration');
                     });
                 }
 
-                return View('frontend.register.register_success_csi_nominee', compact('name', 'email', 'aid', 'isPayableBalanced','associating_institution'));
+
+                return view('frontend.register.register_success_csi_nominee', compact('name', 'email', 'aid', 'isPayableBalanced','associating_institution'));
             }
             return view('frontend.register.payments.create-payment', compact('entity', 'payModes', 'membershipPeriods', 'membership_period', 'paymentMode', 'tno', 'drawn', 'bank', 'branch', 'amountPaid'));
         } else{
@@ -324,9 +329,23 @@ class RegisterController extends Controller
 
         if ($user){
             if($mode == 'offline'){
-                $payment_id = $this->storeOfflinePayment($user);
+                $payment_details=$this->getPaymentDetails($user);                
+                $payment_id = $this->storeOfflinePayment($user);                
                 $payment = Payment::find($payment_id);
                 $paidDiff = $payment->getPayableDiff();
+                
+
+                //getting payment Details
+                $paymentMode = PaymentMode::find($payment_details["paymentMode"]);
+                $paymentMode=$paymentMode->name;
+                
+                $tno=$payment_details["tno"];
+                $drawn=$payment_details["drawn"];
+                $bank=$payment_details["bank"];
+                $branch=$payment_details["branch"];
+                $amountPaid=$payment_details["amountPaid"];          
+
+
 
                 if($paidDiff == 0){
                     // success
@@ -345,7 +364,7 @@ class RegisterController extends Controller
                     $aid = $user->getFullID();
                     if(App::environment('production')){
                         $this->dispatch(new SendRegisterSms($aid, $email, $user->getMembership->mobile));
-                        Mail::queue('frontend.emails.institution_register', ['name' => $name, 'email' => $email, 'aid' => $aid], function($message) use($user){
+                        Mail::queue('frontend.emails.institution_register', ['name' => $name, 'email' => $email, 'aid' => $aid,'paymentMode'=>$paymentMode,'tno'=>$payment_details["tno"],'drawn'=>$payment_details["drawn"],'bank'=>$payment_details["bank"],'branch'=>$payment_details["branch"],'amountPaid'=>$payment_details["amountPaid"]], function($message) use($user){
                             $message->to($user->email)->subject('CSI-Membership');
                             $message->cc($user->getMembership->email, $user->getMembership->head_name);
                         });
@@ -359,10 +378,11 @@ class RegisterController extends Controller
                         $phone = $user->phone->first();
                         $mobile = $phone->mobile;
                         $this->dispatch(new SendRegisterSms($aid, $email, $mobile));
-                        Mail::queue('frontend.emails.individual_register', ['name' => $name, 'email' => $email, 'aid' => $aid], function($message) use($user){
+                        Mail::queue('frontend.emails.individual_register', ['name' => $name, 'email' => $email, 'aid' => $aid,'entity'=>$entity,'paymentMode'=>$paymentMode,'tno'=>$payment_details["tno"],'drawn'=>$payment_details["drawn"],'bank'=>$payment_details["bank"],'branch'=>$payment_details["branch"],'amountPaid'=>$payment_details["amountPaid"]], function($message) use($user){
                             $message->to($user->email)->subject('CSI-Membership');
                         });
                     }
+                    
                     return View('frontend.register.register_success_individual', compact('name', 'email', 'aid', 'isPayableBalanced'));
                 }
             } else if($mode == 'online'){
@@ -1041,6 +1061,37 @@ class RegisterController extends Controller
             return $payment->id;
         });
         return $var;
+    }
+    public function getPaymentDetails(){
+        
+            
+            $membership_period      = Input::get('membership-period');
+            $paymentMode            = Input::get('paymentMode');
+            $tno                    = Input::get('tno');
+            $drawn                  = Input::get('drawn');
+            $bank                   = Input::get('bank');
+            $branch                 = Input::get('branch');
+            $paymentReciept         = Input::file('paymentReciept');
+            $amountPaid             = Input::get('amountPaid');
+
+            $payment_details=[
+                "membership_period"=>$membership_period,
+                "paymentMode"=>$paymentMode,
+                "tno"=>$tno,
+                "drawn"=>$drawn,
+                "bank"=>$bank,
+                "branch"=>$branch,
+                "amountPaid"=>$amountPaid,
+                ];
+
+               
+               
+
+
+            
+
+            return $payment_details;
+      
     }
 
 }
