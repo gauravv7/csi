@@ -206,7 +206,7 @@
                                     <br><br>
                                     Congratulations for successfully joining the Computer Society of India.
                                     <br><br>
-                                    Your application having <strong>AID: {{ $aid }}</strong>, for <strong>Individual Membership</strong> of <strong>Computer Society of India (CSI)</strong> has been verified successfully. Kindly note that the verification is based upon the information / document submitted by you in your application form. If the same is found incorrect, at any later stage, your membership will immediately be terminated, and you will be held liable for the same.
+                                    Your application having <strong>AID: {{ $aid }}</strong>, for <strong>Individual Membership</strong> of <strong>Computer Society of India (CSI)</strong> has been verified successfully and <strong>the payments has been accepted</strong>. Kindly note that the verification is based upon the information / document submitted by you in your application form. If the same is found incorrect, at any later stage, your membership will immediately be terminated, and you will be held liable for the same.
                                 </td>
                             </tr>
                             <tr>

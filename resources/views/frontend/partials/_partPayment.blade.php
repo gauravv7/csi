@@ -19,7 +19,7 @@
 		<span class="help-text">(in case of online payment)/Cheque/DD Number, not required in case of cash</span>
 	</div>
 	<div class="form-group">
-		<label for="exampleInputPassword1" class="req">Drawn On*</label>
+		<label for="exampleInputPassword1" class="req">Drawn On*&nbsp;(Not older that 3 months)</label>
 		{!! Form::text('drawn', $drawn, ['class'=>'form-control', 'id'=>'drawn_on'])!!}
 		<span class="help-text"></span>
 	</div>

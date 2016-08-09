@@ -68,7 +68,7 @@ var formElements = [
 		"city": {
 			rule: [
 				'required',
-				'alphaNumeric'	
+				'city'		
 			]	
 		},
 		"pincode": {

@@ -106,7 +106,7 @@
 					  <div class="steps">
 					  	
 						<div class="form-group">
-							<label class="control-label req">College Name*</label>
+							<label class="control-label req">College Name(Can change it if not same as Student branch)*</label>
 							{!! Form::text('college', null, ['class' => 'form-control', 'placeholder' => 'Enter your college name']) !!}
 						</div>
 					

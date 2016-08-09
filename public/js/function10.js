@@ -66,7 +66,7 @@ var formElements = [
 		"city": {
 			rule: [
 				'required',
-				'alphaDash'	
+				'city'	
 			]	
 		},
 		"pincode": {
@@ -169,7 +169,7 @@ $(document).ready(function(){
 		dateFormat : 'dd/mm/yy',
 		changeMonth: true,
 	    changeYear: true,
-		//minDate:new Date(1900,01,01),
+		//minDate:professionalLastDate,
 	    maxDate: professionalLastDate,
 	    hideIfNoPrevNext: true,
 		yearRange:  '-'+startRange+':-21'

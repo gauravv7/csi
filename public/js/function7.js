@@ -40,7 +40,7 @@ var formElements = [
 		"city": {
 			rule: [
 				'required',
-				'alphaDash'	
+				'city'	
 			]	
 		},
 		"pincode": {

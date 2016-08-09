@@ -204,7 +204,7 @@
                                 <td style="padding: 40px 20px; text-align: center; font-family: sans-serif; font-size: 14px; mso-height-rule: exactly; line-height: 20px; color: #555555; border-top: 1px solid #9c9c9c; border-bottom: 1px solid #9c9c9c">
                                     Dear {{$name}},
                                     <br><br>
-                                    Your Request for Student Branch at Computer Society of India (CSI) membership requested from Login ID - {{$email}}, has been approved successfully
+                                    Your Request for Student Branch at Computer Society of India (CSI) membership requested from Login ID - {{$email}}, has been approved successfully and <strong>the payments has been accepted</strong>.
                                     <br><br>
                                     Your Membership ID is {{$mid}}
                                     <br>

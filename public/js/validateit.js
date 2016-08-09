@@ -1312,6 +1312,10 @@ description: This plugin provides functionality to verify MULTI-STEP html forms,
           regex: /^[ 0-9A-Za-z,.():#/\-]+$/,
           message: "Use digits, letters & '-' only "
         },
+        city: {
+          regex: /^[ 0-9A-Za-z,./\-]+$/,
+          message: "Use digits, letters & special character which are - , only "
+        },              
         text: {
           regex: /^(?![0-9 ]*$)[0-9A-Za-z :"@#&',.\\()'\-]+$/,
           message: "Use digits, letters & special characters which are :, ', \",@ , #, \,. , (), - "
