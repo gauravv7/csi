@@ -52,9 +52,11 @@ Route::group(['prefix'=> 'admin' ,'namespace'=>'Admin'], function(){
 		Route::post('/{id}/update/{narration_id}', ['as' => 'adminMemberPaymentUpdate', 'uses' => 'PaymentController@update']);
 		Route::get('/{id}', ['as' => 'adminMemberPaymentDetails', 'uses' => 'PaymentController@index']);
 		Route::get('/', [ 'as' => 'adminMembershipContent', 'uses'=>'MembershipController@index' ]);
+
 	});
 	Route::group(['prefix' => 'memberships', 'middleware'=>'auth.admin'], function(){
 		Route::get('/', [ 'as' => 'adminMembershipContent', 'uses'=>'MembershipController@index' ]);
+		Route::get('/nominees/{id}', ['as' => 'adminInstitutionNominees', 'uses' => 'MembershipController@institutionNominees']);
 		Route::get('/profile', [ 'as' => 'adminProfileIDContent', 'uses'=>'ProfileIdentityController@index' ]);
 		Route::get('/profile/{id}/accept', [ 'as' => 'adminProfileIDAccept', 'uses'=>'ProfileIdentityController@accept' ]);
 		Route::get('/profile/{id}/reject', [ 'as' => 'adminProfileIDReject', 'uses'=>'ProfileIdentityController@reject' ]);

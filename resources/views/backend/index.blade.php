@@ -140,12 +140,19 @@
                            <span class="pull-right glyphicon glyphicon-chevron-right"></span>
                            <div class="clearfix"></div>
                         </a>
+                        <a href={{ route('adminMembershipContent', ['mt'=>5, 'nv'=>0, 'v'=>1, 'row'=>15, 'cat'=>0,'page'=>1]) }} style="color:#fff">
+                           <h5 class="pull-left" style="color:#fff">Click here to View Nominees</h5>
+                           <span class="pull-right glyphicon glyphicon-chevron-right"></span>
+                           <div class="clearfix"></div>
+                        </a>
                      </div>
                   </div> <!-- row -->
                   
                </div> <!-- panel-heading -->
             </div>   <!-- panel -->
          </div>   <!-- div.md-4 -->         
+
+
       </div>
       <!-- /.row -->
     </div><!--col-->

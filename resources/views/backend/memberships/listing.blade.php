@@ -88,7 +88,7 @@
 							@foreach ($users as $user)
 								<div class="card">
 		                        	<div class="row">
-										<div class="col-md-6">
+										<div class="col-md-4">
 											<h6>{{ $user->getMembership->getName() }}</h6>
 											<p>
 												<span>
@@ -99,9 +99,33 @@
 												<span>
 													{{ $user->email }} {{ $user->getMembership->getMobile() }}
 												</span>
+												@if($user->isPaymentBalanced)				                    	
+					                    	@if($user->membership->type == "institutional")
+												<br/>
+												<span>
+													
+					                    	<a style="color:#545454" href={{ route('adminInstitutionNominees', $user->id) }}><strong>Nominees</strong></a>	
+					                    	</span>				                    	
+					                    	@endif
+					                    	@endif
+												
 												
 											</p>
 					                    </div>
+					                    
+					                    <div class="col-md-1">
+					                    	@if($user->isPaymentBalanced)
+													<strong>Member Since :</strong><br/>{{date('F d, Y', strtotime($user->member_start_date))}}											
+											@endif
+					                    	
+					                    </div>
+					                     <div class="col-md-1">
+					                     	@if($user->isPaymentBalanced)
+													<strong>Member Till :</strong><br/>{{date('F d, Y', strtotime($user->member_end_date))}}												
+											@endif
+					                     	
+					                    </div>
+					                   
 										<div class="col-md-2">
 											<h6>
 												@if($user->isPaymentBalanced)

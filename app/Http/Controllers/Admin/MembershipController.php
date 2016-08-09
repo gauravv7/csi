@@ -11,6 +11,7 @@ use App\Individual;
 use App\Institution;
 use App\InstitutionType;
 use App\Member;
+use App\ProfessionalMember;
 use App\MembershipType;
 use App\Payment;
 use App\RequestService;
@@ -19,6 +20,7 @@ use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Gate;
 use Illuminate\Support\Facades\Input;
 use Laracasts\Flash\Flash;
+use App\Enums\ActionStatus;
 
 class MembershipController extends Controller
 {
@@ -35,7 +37,7 @@ class MembershipController extends Controller
         }
         
         $rows = (Input::exists('row'))? (Input::get('row') < 5)?5:Input::get('row'): 15;          // how many rows for pagination
-        $membership_types = MembershipType::lists('type','id')->put('0', 'all');
+        $membership_types = MembershipType::lists('type','id')->put('5', 'nominee')->put('0', 'all');
         $institution_type = InstitutionType::lists('name', 'id');
         $cat_select_options = [
             0=>'all',
@@ -47,6 +49,8 @@ class MembershipController extends Controller
             6=>'chapter',
             // 7=>'student-branch'
         ];
+
+
 
         // filters
         $cat_selected = (Input::exists('cat'))? intval(Input::get('cat')): 5;       // category
@@ -88,6 +92,15 @@ class MembershipController extends Controller
                 case 4:
                     //professionals
                     $individuals = Individual::getAllProfessionals()->lists('member_id');
+                    $users = Member::getInIds($individuals)->latest()->paginate($rows);
+                    break;
+                case 5:
+                    //nominees
+                    $individuals = Individual::getAllProfessionals()->lists('id');                    
+                    $nominee=ProfessionalMember::whereIn('id',$individuals)->where('is_nominee','<>',ActionStatus::nothing)->lists('id');
+                    
+                    $individuals = Individual::whereIn('id',$nominee)->lists('member_id');
+                    
                     $users = Member::getInIds($individuals)->latest()->paginate($rows);
                     break;
             }
@@ -150,9 +163,42 @@ class MembershipController extends Controller
                     break;
 
             }
+        }       
+
+
+    foreach ($users as $i => $user) {
+         if( ($user->getMembership->membershipType->type == 'professional') && ($user->getMembership->subType->is_nominee==ActionStatus::approved)) {
+            $payments = Payment::filterByServiceAndMember(1, $user->getMembership->subType->institution->member_id)->get();
+        } else{
+            $payments = Payment::filterByServiceAndMember(1, $user->id)->get();
         }
+         if(!$payments->isEmpty()){
+            foreach ($payments as $payment) { 
+                $effective_date= $payment->date_of_effect;              
+                $users[$i]->member_start_date = $payment->date_of_effect;
+                if($payment->date_of_effect){
+                    
+                $users[$i]->member_end_date = $payment->date_of_effect->addYears($payment->paymentHead->servicePeriod->years);
+                }
+            } //foreach
+        }
+       
+    }
+    
 
         return view('backend.memberships.listing', compact('membership_types','users', 'institution_type', 'typeName', 'page', 'mt_selected', 'it_selected', 'verified', 'not_verified', 'rows', 'cat_selected', 'cat_select_options', 'search_text'));
+    }
+
+    public function institutionNominees($member_id)
+    {
+        $member=Member::find($member_id);
+        $institution_id=$member->getMembership->id;       
+        $institution_name=$member->getMembership->name;
+        
+        $members = ProfessionalMember::whereIn('is_nominee', [ActionStatus::pending, ActionStatus::approved,ActionStatus::cancelled])->where('associating_institution_id', $institution_id)->paginate();
+
+
+        return view('backend.memberships.listing-admin-nominees', compact('institution_id','institution_name','statuses','checkbox_array','members','verified','not_verified','rows','page','fromDate','toDate'));
     }
 
     /**
