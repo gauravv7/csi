@@ -3,6 +3,7 @@
 namespace App;
 
 use Illuminate\Database\Eloquent\Model;
+use App\MyHelpers\HFunctions;
 
 class BulkPayment extends Model
 {
@@ -34,7 +35,8 @@ class BulkPayment extends Model
 
     public function getFormattedAmount($country_code, $amount){
         (strcasecmp($country_code, 'IND')==0)? setlocale(LC_MONETARY, 'en_IN'): setlocale(LC_MONETARY, 'en_US');
-        return money_format('%i', $amount);
+         return (function_exists('money_format'))? money_format('%i', $amount): HFunctions::money_format('%i', $amount);
+       // return money_format('%i', $amount);
     }
 
     public function getFormattedCalculatedAmount(){

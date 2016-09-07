@@ -33,6 +33,7 @@ use Laracasts\Flash\Flash;
 use Mail;
 use Request;
 use Validator;
+use Log;
 
 class BulkPaymentsController extends Controller
 {
@@ -212,10 +213,10 @@ class BulkPaymentsController extends Controller
                         
                     
                     // check if not an academic branch then reject the csv, let him upload again.
-                    if( ((1 != $payer->membership_type_id ) && ( 1!=$payer->subType->is_student_branch ) ) ){
-                        Flash::error("Sorry! Your member data consists of student members, which are not allowed to be entered if your not an Academic Student branch on CSI. Please upload rectified data.");
-                        return redirect()->back();
-                    } 
+                    // if( ((1 != $payer->membership_type_id ) && ( 1!=$payer->subType->is_student_branch ) ) ){
+                    //     Flash::error("Sorry! Your member data consists of student members, which are not allowed to be entered if your not an Academic Student branch on CSI. Please upload rectified data.");
+                    //     return redirect()->back();
+                    // } 
                 }// for
             }//if 
         });
