@@ -256,7 +256,7 @@ class BulkPaymentController extends Controller
                     $str_password = str_random(15);
                     $password = (strcasecmp(env('APP_ENV', 'development'), 'production')==0)? Hash::make($str_password): Hash::make("1234");
                     // store every user
-                    if( (0 == strcasecmp($row->type, 's')) && (1 == $payer->getMembership->membership_type_id) ){
+                    if( ( (1 == $payer->getMembership->membership_type_id) ){
                         $validator = Validator::make(array_map('trim', $row->all()), [
                             'membership_period' => 'required',
                             'salutation' => 'required',
@@ -271,14 +271,14 @@ class BulkPaymentController extends Controller
                             'pincode' => 'required|numeric',
                             'email1' => 'required|email|unique:members,email',
                             'email2' => 'email|unique:members,email_extra',
-                            'std' => 'required|numeric',
-                            'phone' => 'required|numeric',
+                            'std_code' => 'required|numeric',
+                            'landline_phone' => 'required|numeric',
                             'country_code' => 'required|numeric',
                             'mobile' => 'required|numeric',
                             'amount' => 'required|numeric',
                             'college' => 'required|string',
                             'course' => 'required|string',
-                            'cbranch' => 'required|string',
+                            'branch_name' => 'required|string',
                             'cduration' => 'required|numeric',
                         ]);
                         if ($validator->fails()) {
@@ -289,37 +289,6 @@ class BulkPaymentController extends Controller
                                         ->withErrors($validator);
                         }
                         $user = $this->storeStudent($row, $payer, $bp, $password);
-                    }elseif( 0 == strcasecmp($row->type, 'p') ){
-                        $validator = Validator::make(array_map('trim', $row->all()), [
-                            'membership_period' => 'required',
-                            'salutation' => 'required',
-                            'fname' => 'required|string',
-                            'mname' => 'string',
-                            'lname' => 'required|string',
-                            'card_name' => 'required|string',
-                            'dob' => 'required|date_format:d/m/Y',
-                            'gender' => 'required',
-                            'address' => 'required|string',
-                            'city' => 'required|string',
-                            'pincode' => 'required|numeric',
-                            'email1' => 'required|email|unique:members,email',
-                            'email2' => 'email|unique:members,email_extra',
-                            'std' => 'required|numeric',
-                            'phone' => 'required|numeric',
-                            'country_code' => 'required|numeric',
-                            'mobile' => 'required|numeric',
-                            'amount' => 'required|numeric',
-                            'organisation' => 'required|string',
-                            'designation' => 'required|string',
-                        ]);
-                        if ($validator->fails()) {
-                            $isAllDone = false;
-                            Flash::error('Please check the integrity of uploaded data');
-                            return redirect()
-                                        ->back()
-                                        ->withErrors($validator);
-                        }
-                        $user = $this->storeProfessional($row, $payer, $bp, $password);
                     }
                     if(App::environment('production')){
                         $rid = RequestService::requestsByMemberIdAndServiceId($user->id, Service::getServiceIDByType('membership'))->first()->id;
@@ -360,13 +329,13 @@ class BulkPaymentController extends Controller
             
             $college = $row->college;
             $course = $row->course;
-            $cbranch = $row->cbranch;
+            $cbranch = $row->branch_name;
             $cduration = $row->cduration;  
             
             $email1 = trim($row->email1);
             $email2 = trim($row->email2);
-            $std = $row->std;
-            $phone = $row->phone;
+            $std = $row->std_code;
+            $phone = $row->landline_phone;
             $country_code = $row->country_code;
             $mobile = $row->mobile;
             

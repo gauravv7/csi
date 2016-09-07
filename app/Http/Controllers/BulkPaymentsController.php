@@ -173,11 +173,11 @@ class BulkPaymentsController extends Controller
                 $count = $rows->count();
                 foreach ($rows as $row) {
 
-                    $membership_type_id = (0 == strcasecmp($row->type, 's'))? 3: 4;
+                    $membership_type_id = 3;
                     $service_id = ServicePeriod::getPeriodsByTypeAndDuration($membership_type_id, $row->membership_period)->first()->id;
                     $currency_id = (Address::getRegisteredAddress($payer->member_id)->first()->country_code == 'IND')? 1: 2;
                     $calculated_amount += PaymentHead::getHead($service_id, $currency_id)->first()->calculatePayable();
-                    if(0 == strcasecmp($row->type, 's')){
+                    
                         $validator = validator::make(array_map('trim', $row->all()), [
                             'membership_period' => 'required',
                             'salutation' => 'required',
@@ -192,14 +192,14 @@ class BulkPaymentsController extends Controller
                             'pincode' => 'required|numeric',
                             'email1' => 'required|email|unique:members,email',
                             'email2' => 'email|unique:members,email_extra',
-                            'std' => 'required|numeric',
-                            'phone' => 'required|numeric',
+                            'std_code' => 'required|numeric',
+                            'landline_phone' => 'required|numeric',
                             'country_code' => 'required|numeric',
                             'mobile' => 'required|numeric',
                             'amount' => 'required|numeric',
                             'college' => 'required|string',
                             'course' => 'required|string',
-                            'cbranch' => 'required|string',
+                            'branch_name' => 'required|string',
                             'cduration' => 'required|numeric',
                         ]);
                         if ($validator->fails()) {
@@ -210,40 +210,9 @@ class BulkPaymentsController extends Controller
                                         ->withErrors($validator);
                         }
                         
-                    } else if(0 == strcasecmp($row->type, 'p')){
-                        $validator = validator::make(array_map('trim', $row->all()), [
-                            'membership_period' => 'required',
-                            'salutation' => 'required',
-                            'fname' => 'required|string',
-                            'mname' => 'string',
-                            'lname' => 'required|string',
-                            'card_name' => 'required|string',
-                            'dob' => 'required|date_format:d/m/Y',
-                            'gender' => 'required',
-                            'address' => 'required|string',
-                            'city' => 'required|string',
-                            'pincode' => 'required|numeric',
-                            'email1' => 'required|email|unique:members,email',
-                            'email2' => 'email|unique:members,email_extra',
-                            'std' => 'required|numeric',
-                            'phone' => 'required|numeric',
-                            'country_code' => 'required|numeric',
-                            'mobile' => 'required|numeric',
-                            'amount' => 'required|numeric',
-                            'organisation' => 'required|string',
-                            'designation' => 'required|string',
-                        ]);
-                        if ($validator->fails()) {
-                            $isAllDone = false;
-                            Flash::error('Please check the integrity of uploaded data');
-                            return redirect()
-                                        ->back()
-                                        ->withErrors($validator);
-                        }
-                        
-                    }
+                    
                     // check if not an academic branch then reject the csv, let him upload again.
-                    if( (0 == strcasecmp($row->type, 's') && (1 != $payer->membership_type_id ) && ( 1!=$payer->subType->is_student_branch ) ) ){
+                    if( ((1 != $payer->membership_type_id ) && ( 1!=$payer->subType->is_student_branch ) ) ){
                         Flash::error("Sorry! Your member data consists of student members, which are not allowed to be entered if your not an Academic Student branch on CSI. Please upload rectified data.");
                         return redirect()->back();
                     } 
@@ -310,11 +279,11 @@ class BulkPaymentsController extends Controller
                 $count = $rows->count();
                 foreach ($rows as $row) {
 
-                    $membership_type_id = (0 == strcasecmp($row->type, 's'))? 3: 4;
+                    $membership_type_id =3;
                     $service_id = ServicePeriod::getPeriodsByTypeAndDuration($membership_type_id, $row->membership_period)->first()->id;
                     $currency_id = (Address::getRegisteredAddress($payer->member_id)->first()->country_code == 'IND')? 1: 2;
                     $calculated_amount += PaymentHead::getHead($service_id, $currency_id)->first()->calculatePayable();
-                    if(0 == strcasecmp($row->type, 's')){
+                    
                         $validator = validator::make(array_map('trim', $row->all()), [
                             'membership_period' => 'required',
                             'salutation' => 'required',
@@ -329,14 +298,14 @@ class BulkPaymentsController extends Controller
                             'pincode' => 'required|numeric',
                             'email1' => 'required|email|unique:members,email',
                             'email2' => 'email|unique:members,email_extra',
-                            'std' => 'required|numeric',
-                            'phone' => 'required|numeric',
+                            'std_code' => 'required|numeric',
+                            'landline_phone' => 'required|numeric',
                             'country_code' => 'required|numeric',
                             'mobile' => 'required|numeric',
                             'amount' => 'required|numeric',
                             'college' => 'required|string',
                             'course' => 'required|string',
-                            'cbranch' => 'required|string',
+                            'branch_name' => 'required|string',
                             'cduration' => 'required|numeric',
                         ]);
                         if ($validator->fails()) {
@@ -347,40 +316,9 @@ class BulkPaymentsController extends Controller
                                         ->withErrors($validator);
                         }
                         
-                    } else if(0 == strcasecmp($row->type, 'p')){
-                        $validator = validator::make(array_map('trim', $row->all()), [
-                            'membership_period' => 'required',
-                            'salutation' => 'required',
-                            'fname' => 'required|string',
-                            'mname' => 'string',
-                            'lname' => 'required|string',
-                            'card_name' => 'required|string',
-                            'dob' => 'required|date_format:d/m/Y',
-                            'gender' => 'required',
-                            'address' => 'required|string',
-                            'city' => 'required|string',
-                            'pincode' => 'required|numeric',
-                            'email1' => 'required|email|unique:members,email',
-                            'email2' => 'email|unique:members,email_extra',
-                            'std' => 'required|numeric',
-                            'phone' => 'required|numeric',
-                            'country_code' => 'required|numeric',
-                            'mobile' => 'required|numeric',
-                            'amount' => 'required|numeric',
-                            'organisation' => 'required|string',
-                            'designation' => 'required|string',
-                        ]);
-                        if ($validator->fails()) {
-                            $isAllDone = false;
-                            Flash::error('Please check the integrity of uploaded data');
-                            return redirect()
-                                        ->back()
-                                        ->withErrors($validator);
-                        }
-                        
-                    }
+                    
                     // check if not an academic branch then reject the csv, let him upload again.
-                    if( (0 == strcasecmp($row->type, 's') && (1 != $payer->membership_type_id ) && ( 1!=$payer->subType->is_student_branch ) ) ){
+                    if( ((1 != $payer->membership_type_id ) && ( 1!=$payer->subType->is_student_branch ) ) ){
                         Flash::error("Sorry! Your member data consists of student members, which are not allowed to be entered if your not an Academic Student branch on CSI. Please upload rectified data.");
                         return redirect()->back();
                     } 

@@ -9,8 +9,27 @@
 
 
 <div class="container-fluid">
+    <div class="row">
+      <div class="col-md-3" style="padding-left: 30px;">
+      </div>
+      <div class="col-md-6" style="padding-left: 30px;">
+      <h4 >Instruction for Bulk payments</h4>
+  
+  
+    <ul class="list-unstyled instructions">
+      <li><strong>Step 1:</strong> Download Sample CSV<li>
+      <li><strong>Step 2:</strong> Upload CSV containing data of new members</li>
+      <li><strong>Step 3:</strong> Make Payment</li>
+    </ul>
+  
+    </div>
+    <div class="col-md-3" style="padding-left: 30px;">
+      </div>
+    </div>
 
-   <div class="row">
+   <div class="row">  
+    
+
       <div class="col-md-12" style="padding-left: 30px;">
             <h2>
                Bulk Registrations
@@ -204,7 +223,7 @@
   </div>
 </div>
 
-<div class="modal fade bs-example-modal-sm" tabindex="-1" role="dialog" id="InstructionBulkPayments" aria-labelledby="mySmallModalLabel">
+<!-- <div class="modal fade bs-example-modal-sm" tabindex="-1" role="dialog" id="InstructionBulkPayments" aria-labelledby="mySmallModalLabel">
 <div class="modal-dialog">
     <div class="modal-content">
     <div class="modal-header">
@@ -220,15 +239,15 @@
   </div>
   </div>
 </div>
-</div>
+</div> -->
 
 @endsection
 
 @section('footer-scripts')
 <script type="text/javascript">
-  jQuery(document).ready(function($) {
-    $('#InstructionBulkPayments').modal('show');  
-  });
+  // jQuery(document).ready(function($) {
+  //   $('#InstructionBulkPayments').modal('show');  
+  // });
   $('#uploadCSVEdit').on('show.bs.modal', function (event) {
     var button = $(event.relatedTarget); // Button that triggered the modal
     var bid = button.data('bid');
