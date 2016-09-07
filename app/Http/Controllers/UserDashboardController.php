@@ -22,13 +22,17 @@ class UserDashboardController extends Controller
      */
     public function index(Request $request) {   
         $id = Auth::user()->user()->id;
+        $is_nominee=0;
+
         if($id!=null || intval($id)>0){
             $user = Auth::user()->user();
             $payments = Payment::filterByServiceAndMember(1, $user->id)->get();
             $reject = 0;
             $unSettledMembershipPayment = 0;
-            if($user->getMembership=='individual' && $user->getMembership->subType=='professional' && $user->getMembership->subType->is_nominee==ActionStatus::approved)
+           
+            if($user->getMembership=='individual' && $user->getMembership->subType=='professional' && ($user->getMembership->subType->is_nominee==ActionStatus::approved||$user->getMembership->subType->is_nominee==ActionStatus::pending))
             {
+                $is_nominee=1;
                 $payments = Payment::filterByServiceAndMember(1, $user->getMembership->subType->institution->member_id)->get();
                 if (!$payments->isEmpty()) {
                     foreach ($payments as $payment) {
@@ -62,7 +66,7 @@ class UserDashboardController extends Controller
             if($user->membership->type == "individual") {
                 $isProfileVerified = $user->getMembership->subType->is_verified;
             }
-            return view('frontend.dashboard.home', compact('user', 'paidDiff', 'unSettledMembershipPayment', 'isProfileVerified', 'reject'));
+            return view('frontend.dashboard.home', compact('user', 'paidDiff', 'unSettledMembershipPayment', 'isProfileVerified', 'reject','is_nominee'));
         }
     }
 

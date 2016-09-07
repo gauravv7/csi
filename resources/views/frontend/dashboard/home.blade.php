@@ -42,12 +42,15 @@
          @if(Auth::user()->user()->membership->type == "individual")
             @if($isProfileVerified == -1)
               <div class="alert alert-dismissible alert-warning">
+
+
                 <h4>Identity Proof not verified!</h4>
                 <p>Your Identity proof has not been verified yet, please wait until to use your services</p>
               </div>
            @endif
            @if($isProfileVerified == 0)
               <div class="alert alert-dismissible alert-warning">
+
                 <h4>Identity Proof not verified!</h4>
                 <p>Your Identity proof has been rejected, please <a class="text-info" data-toggle="modal" data-target="#uploadProfileProof" data-id={{ Auth::user()->user()->id }} style="cursor: pointer">click here</a> to upload again</p>
               </div>
@@ -72,10 +75,12 @@
                 </div>
               @else
 
-                @if(!$reject)
+              @if($is_nominee==-1)
+              <p></p>
+              @elseif(!$reject)
                      <div class="alert alert-dismissible alert-warning">
-                         <h4>Your membership service have expired</h4>
-                         <p>Your payment for membership service have expired. Please make payment for this service to renew your account.</p>
+                         <h4>Your membership service has not been approved or has expired.</h4>
+                         <!--<p>Your payment for membership service have expired. Please make payment for this service to renew your account.</p>-->
                      </div>
                      @can('is-individual')
                       <div class="row">

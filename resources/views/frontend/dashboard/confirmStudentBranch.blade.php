@@ -41,7 +41,7 @@
                 {!! Form::Close() !!}
                 @elseif(Auth::user()->user()->getMembership->subType->is_student_branch == -1)
                     <h4>
-                      REQUEST ACCEPTED.
+                      REQUEST RECEIVED.
                     </h4>
                 @elseif(Auth::user()->user()->getMembership->subType->is_student_branch == 0)
                     <h4>
@@ -52,7 +52,7 @@
                     </h5>
                 @elseif(Auth::user()->user()->getMembership->subType->is_student_branch == 1)
                     <h4>
-                      REQUEST RECEIVED.
+                      REQUEST ACCEPTED.
                     </h4>
                 @endif
 

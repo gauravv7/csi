@@ -43,11 +43,14 @@
       </div>   <!-- panel -->
    </div>   <!-- div.md-4 -->  
    @can('is-institution')
+  @if($user->getMembership->membership_type_id==1)
+   
    <div class="col-md-4">
       <div class="panel dashboard-divs panel-danger">
          <div class="panel-heading">
             <div class="row">
                <div class="col-md-12">
+                  
                   <p><span class="glyphicon glyphicon-exclamation-sign"></span>Bulk Registrations</p>
                </div>
             </div> <!-- row -->
@@ -63,7 +66,10 @@
             
          </div> <!-- panel-heading -->
       </div>   <!-- panel -->
-   </div>   <!-- div.md-4 -->      
+   </div>   <!-- div.md-4 --> 
+
+   @endif
+        
    @endcan
    <!-- can copy one more row from above -->
   
