@@ -266,7 +266,7 @@ class RegisterController extends Controller
                 Mail::queue('frontend.emails.membership-register-form', ['name' => $user->getMembership->getName(), 'email' => $user->email, 'rid' => $rid, 'category' =>$category , 'password' => $str_password], function($message) use($user){
                     $message->to($user->email)->subject('CSI-Membership Registeration');
                     if($user->membership_id==1){
-                        $message->cc($user->email)->subject('CSI-Membership Registeration');
+                        $message->cc($user->getMembership->email)->subject('CSI-Membership Registeration');
                     }
                 });
             }
