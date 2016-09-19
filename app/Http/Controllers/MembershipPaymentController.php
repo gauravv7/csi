@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 
+use App;
 use App\Address;
 use App\Http\Controllers\Controller;
 use App\Http\Requests;
@@ -13,16 +14,23 @@ use App\Payment;
 use App\PaymentHead;
 use App\PaymentMode;
 use App\ServicePeriod;
+use GuzzleHttp\Client;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Input;
 use Laracasts\Flash\Flash;
 use Mail;
-use App;
 
 class MembershipPaymentController extends Controller
 {
+
+    private $client = null;
+
+    public function __construct(){
+        $this->client = new Client();
+    }
+
     /**
      * Display a listing of the resource.
      *
@@ -90,33 +98,46 @@ class MembershipPaymentController extends Controller
                         // ask for split payment
                         $isPayableBalanced = false;
                     }
+
                     $entity = $user->getEntity();
+                    $name = $user->getMembership->getName();
+                    $email = $user->email;
+                    $aid = $user->getMembership->membershipType->prefix."-".$user->id;
+                    $template = '';
+
+                    $data = [
+                        'data' => [
+                            "template" => "registration/institution_register",
+                            "subject" => "CSI-Membership",
+                            "to" => $user->email,
+                            "payload" => ['name' => $name, 'email' => $email, 'aid' => $aid]
+                        ]
+                    ];
+
                     if ( ( $entity == 'institution-academic') || ( $entity == 'institution-non-academic')) {
-                        $name = $user->getMembership->getName();
-                        $email = $user->email;
-                        $aid = $user->getMembership->membershipType->prefix."-".$user->id;
+                        $template = 'frontend.register.register_success_institution';
                         if(App::environment('production')){
+                            $data['data']['cc'] = $user->getMembership->email;
                             $this->dispatch(new SendRegisterSms($aid, $email, $user->getMembership->mobile));
-                            Mail::queue('frontend.emails.institution_register', ['name' => $name, 'email' => $email, 'aid' => $aid], function($message) use($user){
-                                $message->to($user->email)->subject('CSI-Membership'); 
-                                $message->cc($user->getMembership->email, $user->getMembership->head_name);
-                            });
                         }
-                        return View('frontend.register.register_success_institution', compact('name', 'email', 'aid', 'isPayableBalanced'));
+                        
                     } else if ( ( $entity == 'individual-student') || ( $entity == 'individual-professional') ) {
-                        $name = $user->getMembership->getName();
-                        $email = $user->email;
-                        $aid = $user->getMembership->membershipType->prefix."-".$user->id;
+                        $template = 'frontend.register.register_success_individual';
                         if(App::environment('production')){
+                            $data['data']['template'] = "registration/individual_register";
                             $phone = $user->phone->first();
                             $mobile = $phone->mobile;
                             $this->dispatch(new SendRegisterSms($aid, $email, $mobile));
-                            Mail::queue('frontend.emails.individual_register', ['name' => $name, 'email' => $email, 'aid' => $aid], function($message) use($user){
-                                $message->to($user->email)->subject('CSI-Membership'); 
-                            });
                         }
-                        return View('frontend.register.register_success_individual', compact('name', 'email', 'aid', 'isPayableBalanced'));
                     }
+
+                    if(App::environment('production')){
+                        $response = $this->client->requestAsync('POST', 'http://127.0.0.1:8000/email',[
+                            'json' => $data,
+                        ]);
+                    }
+                    
+                    return View($template, compact('name', 'email', 'aid', 'isPayableBalanced'));
                 } else{
                     Flash::error('Some Error Occured, Please try again');
                     return redirect()->back();

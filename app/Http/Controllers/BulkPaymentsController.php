@@ -28,15 +28,24 @@ use App\StudentMember;
 use Auth;
 use DB;
 use Excel;
+use GuzzleHttp\Client;
 use Input;
 use Laracasts\Flash\Flash;
+use Log;
 use Mail;
 use Request;
 use Validator;
-use Log;
 
 class BulkPaymentsController extends Controller
 {
+
+
+    private $client = null;
+
+    public function __construct(){
+        $this->client = new Client();
+    }
+
     /**
      * Display a listing of the resource.
      *
@@ -244,12 +253,21 @@ class BulkPaymentsController extends Controller
 
                 if(App::environment('production')){
                     $this->dispatch(new SendBulkRegistrationSms($user->email, $payer->getMobile()));
-                    Mail::queue('frontend.emails.bulk-registration-request', ['name' => $payer->getName(), 'email' => $user->email, 'mid' => $user->getFullAllotedID()], function($message) use($user){
-                        $message->to($user->email)->subject('CSI-Bulk Registeration');
-                        if($user->membership_id==1){
-                            $message->cc($user->getMembership->email)->subject('CSI-Bulk Registeration');
-                        }
-                    });
+
+                    $data = [
+                        'data' => [
+                            "template" => "bulk_membership/bulk-registration-request",
+                            "subject" => "CSI-Bulk Registeration",
+                            "to" => $user->email,
+                            "payload" => ['name' => $payer->getName(), 'email' => $user->email, 'mid' => $user->getFullAllotedID()]
+                        ]
+                    ];
+                    if ( $user->membership_id==1 ) { //institutions
+                        $data['data']['cc'] = $user->getMembership->email;
+                    }
+                    $response = $this->client->requestAsync('POST', 'http://127.0.0.1:8000/email',[
+                        'json' => $data,
+                    ]);
                 }
                 Flash::success("Record added successfully! Please Check the record for further process!");
                 return redirect()->back();
@@ -339,12 +357,21 @@ class BulkPaymentsController extends Controller
             $bp->save();
             if(App::environment('production')){
                 $this->dispatch(new SendBulkRegistrationEditSms($user->email, $payer->getMobile()));
-                Mail::queue('frontend.emails.bulk-registration-edit-request', ['name' => $payer->getName(), 'email' => $user->email,  'mid' => $user->getFullAllotedID()], function($message) use($user){
-                    $message->to($user->email)->subject('CSI-Bulk Registeration Edit');
-                    if($user->membership_id==1){
-                        $message->cc($user->getMembership->email)->subject('CSI-Bulk Registeration Edit');
-                    }
-                });
+
+                $data = [
+                    'data' => [
+                        "template" => "bulk_membership/bulk-registration-edit-request",
+                        "subject" => "CSI-Bulk Registeration Edit",
+                        "to" => $user->email,
+                        "payload" => ['name' => $payer->getName(), 'email' => $user->email,  'mid' => $user->getFullAllotedID()]
+                    ]
+                ];
+                if ( $user->membership_id==1 ) { //institutions
+                    $data['data']['cc'] = $user->getMembership->email;
+                }
+                $response = $this->client->requestAsync('POST', 'http://127.0.0.1:8000/email',[
+                    'json' => $data,
+                ]);
             }
             Flash::success('Updated successfully');
         }
@@ -386,9 +413,9 @@ class BulkPaymentsController extends Controller
         $filename.=$paymentReciept->getClientOriginalExtension();
         $paymentReciept->move(storage_path('uploads/payment_proofs'), $filename);
         $narration->proof = $filename;
-        if(!$narration->save()){
-            false;
-        }
+        // if(!$narration->save()){
+        //     false;
+        // }
         $bp = BulkPayment::find($id);
         $bp->narration_id = $narration->id;
         
@@ -397,12 +424,21 @@ class BulkPaymentsController extends Controller
         }
         if(App::environment('production')){
             $this->dispatch(new SendBulkRegistrationPaymentSms($payer->email, $payer->getMembership->getMobile()));
-            Mail::queue('frontend.emails.bulk-registration-payment', ['name' => $payer->getMembership->getName(), 'email' => $payer->email,  'mid' => $payer->getFullAllotedID()], function($message) use($payer){
-                $message->to($payer->email)->subject('CSI-Bulk Registeration payments recieved');
-                if($payer->membership_id==1){
-                    $message->cc($payer->getMembership->email)->subject('CSI-Bulk Registeration payments recieved');
-                }
-            });
+
+            $data = [
+                'data' => [
+                    "template" => "bulk_membership/bulk-registration-payment",
+                    "subject" => "CSI-Bulk Registeration Payments",
+                    "to" => $payer->email,
+                    "payload" => ['name' => $payer->getMembership->getName(), 'email' => $payer->email,  'mid' => $payer->getFullAllotedID()]
+                ]
+            ];
+            if ( $payer->membership_id==1 ) { //institutions
+                $data['data']['cc'] = $payer->getMembership->email;
+            }
+            $response = $this->client->requestAsync('POST', 'http://127.0.0.1:8000/email',[
+                'json' => $data,
+            ]);
         }
         return true;
     }

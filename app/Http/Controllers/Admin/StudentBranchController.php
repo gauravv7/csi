@@ -14,6 +14,7 @@ use App\Jobs\SendStudentBranchRequestDeclineSms;
 use App\RequestAction;
 use App\RequestService;
 use App\Service;
+use GuzzleHttp\Client;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Input;
 use Laracasts\Flash\Flash;
@@ -21,6 +22,13 @@ use Mail;
 
 class StudentBranchController extends Controller
 {
+ 
+    private $client = null;
+
+    public function __construct(){
+        $this->client = new Client();
+    }
+
     /**
      * Display a listing of the resource.
      *
@@ -81,12 +89,20 @@ class StudentBranchController extends Controller
                     //mail and sms
                     if(App::environment('production')){
                         $this->dispatch(new SendStudentBranchRequestApproveSms($request->id, $user->getFullAllotedID(), $user->email, $user->getMembership->mobile));
-                        Mail::queue('frontend.emails.student-branch-approve', ['name' => $user->getMembership->getName(), 'email' => $user->email, 'rid' => $request->id, 'mid' => $user->getFullAllotedID()], function($message) use($user){
-                            $message->to($user->email)->subject('CSI-Request Student Branch Approved');
-                            if($user->membership_id==1){
-                                $message->cc($user->getMembership->email)->subject('CSI-Request Student Branch Approved');
-                            }
-                        });
+                        $data = [
+                            'data' => [
+                                "template" => "student_branch/student-branch-approve",
+                                "subject" => 'CSI-Request Student Branch Approved',
+                                "to" => $user->email,
+                                "payload" => ['name' => $user->getMembership->getName(), 'email' => $user->email, 'rid' => $request->id, 'mid' => $user->getFullAllotedID()]
+                            ]
+                        ];
+                        if($user->membership_id==1){
+                            $data['data']['cc']= $user->getMembership->email;
+                        }
+                        $response = $this->client->requestAsync('POST', 'http://127.0.0.1:8000/email',[
+                            'json' => $data,
+                        ]);
                     }
 
                     Flash::success('Request approved');
@@ -160,12 +176,20 @@ class StudentBranchController extends Controller
                     //mail and sms
                     if(App::environment('production')){
                         $this->dispatch(new SendStudentBranchRequestDeclineSms($request->id, $user->email, $user->getMembership->mobile));
-                        Mail::queue('frontend.emails.student-branch-decline', ['name' => $user->getMembership->getName(), 'email' => $user->email, 'rid' => $request->id, 'reason' => $academic_inst->rejection_reason], function($message) use($user){
-                            $message->to($user->email)->subject('CSI-Request Student Branch declined');
-                            if($user->membership_id==1){
-                                $message->bcc($user->getMembership->email)->subject('CSI-Request Student Branch declined');
-                            }
-                        });
+                        $data = [
+                            'data' => [
+                                "template" => "student_branch/student-branch-decline",
+                                "subject" => 'CSI-Request Student Branch declined',
+                                "to" => $user->email,
+                                "payload" => ['name' => $user->getMembership->getName(), 'email' => $user->email, 'rid' => $request->id, 'reason' => $academic_inst->rejection_reason]
+                            ]
+                        ];
+                        if($user->membership_id==1){
+                            $data['data']['cc']= $user->getMembership->email;
+                        }
+                        $response = $this->client->requestAsync('POST', 'http://127.0.0.1:8000/email',[
+                            'json' => $data,
+                        ]);
                     }
 
                     Flash::success('Request declined');

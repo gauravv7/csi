@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 
+use App;
 use App\AcademicMember;
 use App\Address;
 use App\Country;
@@ -15,8 +16,8 @@ use App\Individual;
 use App\Institution;
 use App\InstitutionType;
 use App\Jobs\SendMembershipRegisterFormSms;
-use App\Jobs\SendRegisterSms;
 use App\Jobs\SendNomineeMembershipRegisterSms;
+use App\Jobs\SendRegisterSms;
 use App\Journal;
 use App\Member;
 use App\Narration;
@@ -34,20 +35,27 @@ use App\ServiceTaxClass;
 use App\State;
 use App\StudentMember;
 use DB;
+use GuzzleHttp\Client;
 use Hash;
-use App;
 use Illuminate\Contracts\View\View;
 use Illuminate\Database\Eloquent\Collection;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Input;
-use Mail;
 use Laracasts\Flash\Flash;
 use Log;
+use Mail;
 use Response;
 
 class RegisterController extends Controller
 {
+    private $client = null;
+
+    public function __construct(){
+        $this->client = new Client();
+    }
+
+
     /**
      * Display a listing of the resource.
      *
@@ -155,13 +163,19 @@ class RegisterController extends Controller
                         if (App::environment('production')) {
                             $phone = $user->phone->first();
                             $mobile = $phone->mobile;
+                            $data = [
+                                "data" => [
+                                    "template" => "nominee/nominee-register",
+                                    "subject" => "CSI-Nominee Membership Registeration",
+                                    "to" => $user->email,
+                                    "bcc" => $associating_institution_email.', '.$emailOfHeadInst,
+                                    "payload" => ['name' => $name, 'email' => $email, 'aid' => $aid, 'associating_institution' => $associating_institution]
+                                ]
+                            ];
                             $this->dispatch(new SendNomineeMembershipRegisterSms($email, $mobile, $associating_institution));
-                            Mail::queue('frontend.emails.nominee-requests.nominee-register', ['name' => $name, 'email' => $email, 'aid' => $aid, 'associating_institution' => $associating_institution], function ($message) use ($user, $associating_institution_email, $emailOfHeadInst) {
-                                $message->to($user->email)
-                                    ->bcc($associating_institution_email)
-                                    ->bcc($emailOfHeadInst)
-                                    ->subject('CSI-Nominee Membership Registeration');
-                            });
+                            $res = $this->client->requestAsync('POST', 'http://127.0.0.1/email', [
+                                "json" => $data,
+                            ]);
                         }
                     }
 
@@ -263,12 +277,21 @@ class RegisterController extends Controller
             if(App::environment('production')){
                 $rid = RequestService::requestsByMemberIdAndServiceId($user->id, Service::getServiceIDByType('membership'))->first()->id;
                 $this->dispatch(new SendMembershipRegisterFormSms($rid, $user->email, $user->getMembership->getMobile(), $entity, $str_password));
-                Mail::queue('frontend.emails.membership-register-form', ['name' => $user->getMembership->getName(), 'email' => $user->email, 'rid' => $rid, 'category' =>$category , 'password' => $str_password], function($message) use($user){
-                    $message->to($user->email)->subject('CSI-Membership Registeration');
-                    if($user->membership_id==1){
-                        $message->cc($user->getMembership->email)->subject('CSI-Membership Registeration');
-                    }
-                });
+
+                $data = [
+                    'data' => [
+                        "template" => "registration/membership-register-form",
+                        "subject" => "CSI-Membership Registeration",
+                        "to" => $user->email,
+                        "payload" => ['name' => $user->getMembership->getName(), 'email' => $user->email, 'rid' => $rid, 'category' =>$category , 'password' => $str_password]
+                    ]
+                ];
+                if($user->membership_id==1){
+                    $data['data']['cc'] = $user->getMembership->email;
+                }
+                $response = $this->client->requestAsync('POST', 'http://127.0.0.1:8000/email',[
+                    'json' => $data,
+                ]);
             }
             $country_code = Address::getRegisteredAddress($user->id)->lists('country_code');
 
@@ -292,17 +315,33 @@ class RegisterController extends Controller
                 if(App::environment('production')){
                     $phone = $user->phone->first();
                     $mobile = $phone->mobile;
+
                     $this->dispatch(new SendRegisterSms($aid, $email, $mobile));
-                    Mail::queue('frontend.emails.individual_register', ['name' => $name, 'email' => $email, 'aid' => $aid,'entity'=>$entity], function($message) use($user){
-                        $message->to($user->email)->subject('CSI-Membership');
-                    });
+                    $data_individual_register = [
+                        'data' => [
+                            "template" => "registration/individual_register",
+                            "subject" => "CSI-Membership",
+                            "to" => $user->email,
+                            "payload" => ['name' => $name, 'email' => $email, 'aid' => $aid,'entity'=>$entity]
+                        ]
+                    ];
+                    $response = $this->client->requestAsync('POST', 'http://127.0.0.1:8000/email',[
+                        'json' => $data_individual_register,
+                    ]);
+
+                    $data_nominee_register = [
+                        'data' => [
+                            "template" => "nominee/nominee-register",
+                            "subject" => 'CSI-Nominee Membership Registeration',
+                            "to" => $user->email,
+                            "cc" => $associating_institution_email,
+                            "payload" => ['name' => $name, 'email' => $email, 'aid' => $aid,'associating_institution'=>$associating_institution]
+                        ]
+                    ];
                     $this->dispatch(new SendNomineeMembershipRegisterSms( $email, $mobile,$associating_institution));
-                    Mail::queue('frontend.emails.nominee-requests.nominee-register', ['name' => $name, 'email' => $email, 'aid' => $aid,'associating_institution'=>$associating_institution], function($message) use($email){
-                        $message->to($email)->subject('CSI-Nominee Membership Registeration');
-                    });
-                    Mail::queue('frontend.emails.nominee-requests.nominee-register', ['name' => $name, 'email' => $email, 'aid' => $aid,'associating_institution'=>$associating_institution], function($message) use($associating_institution_email){
-                        $message->to($associating_institution_email)->subject('CSI-Nominee Membership Registeration');
-                    });
+                    $response = $this->client->requestAsync('POST', 'http://127.0.0.1:8000/email',[
+                        'json' => $data_nominee_register,
+                    ]);
                 }
 
 
@@ -364,10 +403,20 @@ class RegisterController extends Controller
                     $aid = $user->getFullID();
                     if(App::environment('production')){
                         $this->dispatch(new SendRegisterSms($aid, $email, $user->getMembership->mobile));
-                        Mail::queue('frontend.emails.institution_register', ['name' => $name, 'email' => $email, 'aid' => $aid,'paymentMode'=>$paymentMode,'tno'=>$payment_details["tno"],'drawn'=>$payment_details["drawn"],'bank'=>$payment_details["bank"],'branch'=>$payment_details["branch"],'amountPaid'=>$payment_details["amountPaid"]], function($message) use($user){
-                            $message->to($user->email)->subject('CSI-Membership');
-                            $message->cc($user->getMembership->email, $user->getMembership->head_name);
-                        });
+
+                        $data = [
+                            'data' => [
+                                "template" => "registration/institution_register",
+                                "subject" => 'CSI-Membership',
+                                "to" => $user->email,
+                                "cc" => $user->getMembership->email.", ".$user->getMembership->head_name,
+                                "payload" => ['name' => $name, 'email' => $email, 'aid' => $aid,'paymentMode'=>$paymentMode,'tno'=>$payment_details["tno"],'drawn'=>$payment_details["drawn"],'bank'=>$payment_details["bank"],'branch'=>$payment_details["branch"],'amountPaid'=>$payment_details["amountPaid"]
+                                ]
+                            ]
+                        ];
+                        $response = $this->client->requestAsync('POST', 'http://127.0.0.1:8000/email',[
+                            'json' => $data,
+                        ]);
                     }
                     return View('frontend.register.register_success_institution', compact('name', 'email', 'aid', 'isPayableBalanced'));
                 } else if ( ( $entity == 'individual-student') || ( $entity == 'individual-professional') ) {
@@ -378,9 +427,19 @@ class RegisterController extends Controller
                         $phone = $user->phone->first();
                         $mobile = $phone->mobile;
                         $this->dispatch(new SendRegisterSms($aid, $email, $mobile));
-                        Mail::queue('frontend.emails.individual_register', ['name' => $name, 'email' => $email, 'aid' => $aid,'entity'=>$entity,'paymentMode'=>$paymentMode,'tno'=>$payment_details["tno"],'drawn'=>$payment_details["drawn"],'bank'=>$payment_details["bank"],'branch'=>$payment_details["branch"],'amountPaid'=>$payment_details["amountPaid"]], function($message) use($user){
-                            $message->to($user->email)->subject('CSI-Membership');
-                        });
+
+                        $data = [
+                            'data' => [
+                                "template" => "registration/institution_register",
+                                "subject" => 'CSI-Membership',
+                                "to" => $user->email,
+                                "payload" => ['name' => $name, 'email' => $email, 'aid' => $aid,'entity'=>$entity,'paymentMode'=>$paymentMode,'tno'=>$payment_details["tno"],'drawn'=>$payment_details["drawn"],'bank'=>$payment_details["bank"],'branch'=>$payment_details["branch"],'amountPaid'=>$payment_details["amountPaid"]
+                                ]
+                            ]
+                        ];
+                        $response = $this->client->requestAsync('POST', 'http://127.0.0.1:8000/email',[
+                            'json' => $data,
+                        ]);
                     }
                     
                     return View('frontend.register.register_success_individual', compact('name', 'email', 'aid', 'isPayableBalanced'));

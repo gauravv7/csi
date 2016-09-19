@@ -31,6 +31,7 @@ use App\ServicePeriod;
 use App\StudentMember;
 use Carbon\Carbon;
 use DB;
+use GuzzleHttp\Client;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Hash;
@@ -44,6 +45,14 @@ use Response;
 
 class BulkPaymentController extends Controller
 {
+
+
+    private $client = null;
+
+    public function __construct(){
+        $this->client = new Client();
+    }
+    
     /**
      * Display a listing of the resource.
      *
@@ -178,12 +187,20 @@ class BulkPaymentController extends Controller
         $user = $bulkPayment->institution->member;
         if(App::environment('production')){
             $this->dispatch(new SendBulkRegistrationRejectSms($user->email, $user->getMembership->getMobile(), $bulkPayment->rejection_reason));
-            Mail::queue('frontend.emails.bulk-registration-reject', ['name' => $user->getMembership->getName(), 'email' => $user->email,  'mid' => $user->getFullAllotedID(), 'reason' => $bulkPayment->rejection_reason], function($message) use($user){
-                $message->to($user->email)->subject('CSI-Bulk Registeration Rejected');
-                if($user->membership_id==1){
-                    $message->cc($user->email)->subject('CSI-Bulk Registeration Rejected');
-                }
-            });
+            $data = [
+                'data' => [
+                    "template" => "bulk_membership/bulk-registration-reject",
+                    "subject" => 'CSI-Bulk Registeration Rejected',
+                    "to" => $user->email,
+                    "payload" => ['name' => $user->getMembership->getName(), 'email' => $user->email,  'mid' => $user->getFullAllotedID(), 'reason' => $bulkPayment->rejection_reason]
+                ]
+            ];
+            if($user->membership_id==1){
+                $data['data']['cc'] = $user->getMembership->email;
+            }
+            $response = $this->client->requestAsync('POST', 'http://127.0.0.1:8000/email',[
+                'json' => $data,
+            ]);
         }
         Flash::success('Rejected Successfully');
         return redirect()->back();
@@ -206,12 +223,21 @@ class BulkPaymentController extends Controller
                 $user = $bulkPayment->institution->member;
                 if(App::environment('production')){
                     $this->dispatch(new SendBulkRegistrationAcceptSms($user->email, $user->getMembership->getMobile()));
-                    Mail::queue('frontend.emails.bulk-registration-accept', ['name' => $user->getMembership->getName(), 'email' => $user->email,  'mid' => $user->getFullAllotedID()], function($message) use($user){
-                        $message->to($user->email)->subject('CSI-Bulk Registeration Accepted');
-                        if($user->membership_id==1){
-                            $message->cc($user->email)->subject('CSI-Bulk Registeration Accepted');
-                        }
-                    });
+
+                    $data = [
+                        'data' => [
+                            "template" => "bulk_membership/bulk-registration-accept",
+                            "subject" => 'CSI-Bulk Registeration Accepted',
+                            "to" => $user->email,
+                            "payload" => ['name' => $user->getMembership->getName(), 'email' => $user->email,  'mid' => $user->getFullAllotedID()]
+                        ]
+                    ];
+                    if($user->membership_id==1){
+                        $data['data']['cc'] = $user->getMembership->email;
+                    }
+                    $response = $this->client->requestAsync('POST', 'http://127.0.0.1:8000/email',[
+                        'json' => $data,
+                    ]);
                 }
             } else{
                 Flash::error('Oops! There occured some error while processing the member data, please contact the technical staff');
@@ -256,7 +282,7 @@ class BulkPaymentController extends Controller
                     $str_password = str_random(15);
                     $password = (strcasecmp(env('APP_ENV', 'development'), 'production')==0)? Hash::make($str_password): Hash::make("1234");
                     // store every user
-                    if( ( (1 == $payer->getMembership->membership_type_id) ){
+                    if(  (1 == $payer->getMembership->membership_type_id) ){
                         $validator = Validator::make(array_map('trim', $row->all()), [
                             'membership_period' => 'required',
                             'salutation' => 'required',
@@ -293,9 +319,17 @@ class BulkPaymentController extends Controller
                     if(App::environment('production')){
                         $rid = RequestService::requestsByMemberIdAndServiceId($user->id, Service::getServiceIDByType('membership'))->first()->id;
                         $this->dispatch(new SendBulkMembershipRegisterSms($rid, $user->email, $user->getMembership->getMobile(), $user->getFormattedEntity(), $str_password));
-                        Mail::queue('frontend.emails.bulk-membership-register', ['name' => $user->getMembership->getName(), 'email' => $user->email, 'rid' => $rid, 'category' => $user->getFormattedEntity(), 'password' => $str_password], function($message) use($user){
-                            $message->to($user->email)->subject('CSI-Membership Registeration');
-                        });
+                        $data = [
+                            'data' => [
+                                "template" => "bulk_membership/bulk-membership-register",
+                                "subject" => 'CSI-Membership Registeration',
+                                "to" => $user->email,
+                                "payload" => ['name' => $user->getMembership->getName(), 'email' => $user->email, 'rid' => $rid, 'category' => $user->getFormattedEntity(), 'password' => $str_password]
+                            ]
+                        ];
+                        $response = $this->client->requestAsync('POST', 'http://127.0.0.1:8000/email',[
+                            'json' => $data,
+                        ]);
                     }
                     if(!$user){
                         return false;

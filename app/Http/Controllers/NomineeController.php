@@ -7,10 +7,10 @@ use App\Enums\ActionStatus;
 use App\Http\Controllers\Controller;
 use App\Http\Requests;
 use App\Http\Requests\CreateNomineeRequest;
-use App\Jobs\SendNomineeMembershipAcceptSms;
-//use App\Jobs\SendNomineeMembershipRejectSms;
+use App\Individual;
 use App\Jobs\SendCSINomineeMembershipAcceptSms;
 use App\Jobs\SendCSINomineeMembershipRejectSms;
+use App\Jobs\SendNomineeMembershipAcceptSms;
 use App\Jobs\SendNomineeMembershipRemoveSms;
 use App\Jobs\SendNomineeMembershipRenewSms;
 use App\Journal;
@@ -18,11 +18,11 @@ use App\Member;
 use App\Narration;
 use App\Payment;
 use App\ProfessionalMember;
-use App\Individual;
 use App\RequestService;
 use App\Service;
 use Carbon\Carbon;
 use Flash;
+use GuzzleHttp\Client;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Input;
@@ -30,6 +30,14 @@ use Mail;
 
 class NomineeController extends Controller
 {
+
+
+    private $client = null;
+
+    public function __construct(){
+        $this->client = new Client();
+    }
+
     /**
      * Display a listing of the resource.
      *
@@ -136,11 +144,18 @@ class NomineeController extends Controller
                             $effective_date = $prof->nominee_effective;
                             if(App::environment('production')){
                                 $this->dispatch(new SendNomineeMembershipAcceptSms($member->email, $member->getMembership->getMobile(), $effective_date, $nameOfInst));
-                                Mail::queue('frontend.emails.nominee-membership-accept', ['name' => $member->getMembership->getName(), 'email' => $member->email, 'inst' => $nameOfInst, 'date' => $effective_date], function($message) use($member, $emailOfInst, $emailOfHeadInst){
-                                    $message->to($member->email)->subject('CSI-Nominee Membership Registeration');
-                                    $message->bcc($emailOfInst)->subject('CSI-Nominee Membership Registeration');
-                                    $message->bcc($emailOfHeadInst)->subject('CSI-Nominee Membership Registeration');
-                                });
+                                $data = [
+                                    'data' => [
+                                        "template" => "nominee/nominee-membership-accept",
+                                        "subject" => 'CSI-Nominee Membership Registeration',
+                                        "to" => $member->email,
+                                        "bcc" => $emailOfInst.", ".$emailOfHeadInst,
+                                        "payload" => ['name' => $member->getMembership->getName(), 'email' => $member->email, 'inst' => $nameOfInst, 'date' => $effective_date]
+                                    ]
+                                ];
+                                $response = $this->client->requestAsync('POST', 'http://127.0.0.1:8000/email',[
+                                    'json' => $data,
+                                ]);
                             }
                             Flash::success('Nominee created successfully');
                         }
@@ -190,11 +205,18 @@ class NomineeController extends Controller
                                     $effective_date = $prof_member->nominee_effective;
                                     if (App::environment('production')) {
                                         $this->dispatch(new SendCSINomineeMembershipAcceptSms($email, $member->getMembership->getMobile(), $effective_date, $nameOfInst));
-                                        Mail::queue('frontend.emails.nominee-requests.nominee-accept', ['name' => $name, 'email' => $email, 'associating_institution' => $nameOfInst, 'date' => $effective_date], function ($message) use ($email, $emailOfInst, $emailOfHeadInst) {
-                                            $message->to($email)->subject('CSI-Nominee Membership Registeration');
-                                            $message->bcc($emailOfInst)->subject('CSI-Nominee Membership Registeration');
-                                            $message->bcc($emailOfHeadInst)->subject('CSI-Nominee Membership Registeration');
-                                        });
+                                        $data = [
+                                            'data' => [
+                                                "template" => "nominee/nominee-accept",
+                                                "subject" => 'CSI-Nominee Membership Registeration',
+                                                "to" => $member->email,
+                                                "bcc" => $emailOfInst.", ".$emailOfHeadInst,
+                                                "payload" => ['name' => $name, 'email' => $email, 'associating_institution' => $nameOfInst, 'date' => $effective_date]
+                                            ]
+                                        ];
+                                        $response = $this->client->requestAsync('POST', 'http://127.0.0.1:8000/email',[
+                                            'json' => $data,
+                                        ]);
                                     }
                                     Flash::success('Nominee accepted successfully');
                                 }
@@ -246,11 +268,18 @@ class NomineeController extends Controller
                                     $effective_date = $prof_member->nominee_effective;
                                     if (App::environment('production')) {
                                         $this->dispatch(new SendNomineeMembershipRenewSms($email, $member->getMembership->getMobile(), $effective_date, $nameOfInst));
-                                        Mail::queue('frontend.emails.nominee-requests.nominee-renew', ['name' => $name, 'email' => $email, 'associating_institution' => $nameOfInst, 'date' => $effective_date], function ($message) use ($email, $emailOfInst, $emailOfHeadInst) {
-                                            $message->to($email)->subject('CSI-Nominee Membership Registeration');
-                                            $message->bcc($emailOfInst)->subject('CSI-Nominee Membership Registeration');
-                                            $message->bcc($emailOfHeadInst)->subject('CSI-Nominee Membership Registeration');
-                                        });
+                                        $data = [
+                                            'data' => [
+                                                "template" => "nominee/nominee-renew",
+                                                "subject" => 'CSI-Nominee Membership Registeration',
+                                                "to" => $member->email,
+                                                "bcc" => $emailOfInst.", ".$emailOfHeadInst,
+                                                "payload" => ['name' => $name, 'email' => $email, 'associating_institution' => $nameOfInst, 'date' => $effective_date]
+                                            ]
+                                        ];
+                                        $response = $this->client->requestAsync('POST', 'http://127.0.0.1:8000/email',[
+                                            'json' => $data,
+                                        ]);
                                     }
                                     Flash::success('Nominee renewed successfully');
                                 }
@@ -287,11 +316,18 @@ class NomineeController extends Controller
                             $effective_date = $prof_member->nominee_effective;
                             if (App::environment('production')) {
                                 $this->dispatch(new SendCSINomineeMembershipRejectSms($member->email, $member->getMembership->getMobile(), $effective_date, $nameOfInst));
-                                Mail::queue('frontend.emails.nominee-requests.nominee-reject', ['name' => $member->getMembership->getName(), 'email' => $member->email, 'associating_institution' => $nameOfInst, 'date' => $effective_date], function ($message) use ($member, $emailOfInst, $emailOfHeadInst) {
-                                    $message->to($member->email)->subject('CSI-Nominee Membership Registeration');
-                                    $message->bcc($emailOfInst)->subject('CSI-Nominee Membership Registeration');
-                                    $message->bcc($emailOfHeadInst)->subject('CSI-Nominee Membership Registeration');
-                                });
+                                $data = [
+                                    'data' => [
+                                        "template" => "nominee/nominee-reject",
+                                        "subject" => 'CSI-Nominee Membership Registeration',
+                                        "to" => $member->email,
+                                        "bcc" => $emailOfInst.", ".$emailOfHeadInst,
+                                        "payload" => ['name' => $member->getMembership->getName(), 'email' => $member->email, 'associating_institution' => $nameOfInst, 'date' => $effective_date]
+                                    ]
+                                ];
+                                $response = $this->client->requestAsync('POST', 'http://127.0.0.1:8000/email',[
+                                    'json' => $data,
+                                ]);
                             }
                             Flash::success('Nominee removed successfully');
                         }
@@ -326,11 +362,18 @@ class NomineeController extends Controller
                             $effective_date = $user->nominee_effective;
                             if (App::environment('production')) {
                                 $this->dispatch(new SendNomineeMembershipRemoveSms($member->email, $member->getMembership->getMobile(), $effective_date, $nameOfInst));
-                                Mail::queue('frontend.emails.nominee-requests.nominee-remove', ['name' => $member->getMembership->getName(), 'email' => $member->email, 'associating_institution' => $nameOfInst, 'date' => $effective_date], function ($message) use ($member, $emailOfInst, $emailOfHeadInst) {
-                                    $message->to($member->email)->subject('CSI-Nominee Membership Registeration');
-                                    $message->bcc($emailOfInst)->subject('CSI-Nominee Membership Registeration');
-                                    $message->bcc($emailOfHeadInst)->subject('CSI-Nominee Membership Registeration');
-                                });
+                                $data = [
+                                    'data' => [
+                                        "template" => "nominee/nominee-remove",
+                                        "subject" => 'CSI-Nominee Membership Registeration',
+                                        "to" => $member->email,
+                                        "bcc" => $emailOfInst.", ".$emailOfHeadInst,
+                                        "payload" => ['name' => $member->getMembership->getName(), 'email' => $member->email, 'associating_institution' => $nameOfInst, 'date' => $effective_date]
+                                    ]
+                                ];
+                                $response = $this->client->requestAsync('POST', 'http://127.0.0.1:8000/email',[
+                                    'json' => $data,
+                                ]);
                             }
                             Flash::success('Nominee removed successfully');
                         }

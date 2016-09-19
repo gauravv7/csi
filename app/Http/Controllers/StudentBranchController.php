@@ -10,14 +10,22 @@ use App\Jobs\SendStudentBranchRequestSms;
 use App\RequestAction;
 use App\RequestService;
 use App\Service;
+use GuzzleHttp\Client;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
-use Mail;
 use Laracasts\Flash\Flash;
+use Mail;
 
 class StudentBranchController extends Controller
 {
+
+    private $client = null;
+
+    public function __construct(){
+        $this->client = new Client();
+    }
+
     /**
      * Display a listing of the resource.
      *
@@ -73,12 +81,20 @@ class StudentBranchController extends Controller
             //mail and sms
             if(App::environment('production')){
                 $this->dispatch(new SendStudentBranchRequestSms($request->id, $user->getFullAllotedID(), $request->member->email, $request->member->getMembership->mobile));
-                Mail::queue('frontend.emails.student-branch-request', ['name' => $request->member->getMembership->getName(), 'email' => $request->member->email, 'rid' => $request->id, 'mid' => $user->getFullAllotedID()], function($message) use($user){
-                    $message->to($user->email)->subject('CSI-Request Student Branch');
-                    if($user->membership_id==1){
-                        $message->cc($user->getMembership->email)->subject('CSI-Request Student Branch');
-                    }
-                });
+                $data = [
+                    'data' => [
+                        "template" => "student_branch/student-branch-request",
+                        "subject" => 'CSI-Request Student Branch',
+                        "to" => $user->email,
+                        "payload" => ['name' => $request->member->getMembership->getName(), 'email' => $request->member->email, 'rid' => $request->id, 'mid' => $user->getFullAllotedID()]
+                    ]
+                ];
+                if($user->membership_id==1){
+                    $data['data']['cc'] = $user->getMembership->email;
+                }
+                $response = $this->client->requestAsync('POST', 'http://127.0.0.1:8000/email',[
+                    'json' => $data,
+                ]);
             }
             Flash::success('Your Request for being a student branch has been sent');
         } else{

@@ -17,6 +17,7 @@ use App\MembershipType;
 use App\Payment;
 use App\RequestService;
 use App\Service;
+use GuzzleHttp\Client;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Gate;
@@ -26,6 +27,13 @@ use Mail;
 
 class ProfileIdentityController extends Controller
 {
+
+    private $client = null;
+
+    public function __construct(){
+        $this->client = new Client();
+    }
+
     /**
      * Display a listing of the resource.
      *
@@ -252,9 +260,18 @@ class ProfileIdentityController extends Controller
             if(App::environment('production')){
                 $rid = RequestService::requestsByMemberIdAndServiceId($user->id, Service::getServiceIDByType('membership'))->first()->id;
                 $this->dispatch(new SendMembershipIdentityAcceptSms($rid, $user->email, $user->getMembership->getMobile(), $user->getFormattedEntity()));
-                Mail::queue('frontend.emails.membership-identity-accept', ['name' => $user->getMembership->getName(), 'email' => $user->email, 'rid' => $rid, 'category' => $user->getFormattedEntity()], function($message) use($user){
-                    $message->to($user->email)->subject('CSI-Membership Registeration Identity Proof');
-                });
+
+                $data = [
+                    'data' => [
+                        "template" => "registration/membership-identity-accept",
+                        "subject" => 'CSI-Membership Registeration Identity Proof',
+                        "to" => $user->email,
+                        "payload" => ['name' => $user->getMembership->getName(), 'email' => $user->email, 'rid' => $rid, 'category' => $user->getFormattedEntity()]
+                    ]
+                ];
+                $response = $this->client->requestAsync('POST', 'http://127.0.0.1:8000/email',[
+                    'json' => $data,
+                ]);
             }
             Flash::success('profile verified successfully');
         }
@@ -277,9 +294,17 @@ class ProfileIdentityController extends Controller
             if(App::environment('production')){
                 $rid = RequestService::requestsByMemberIdAndServiceId($user->id, Service::getServiceIDByType('membership'))->first()->id;
                 $this->dispatch(new SendMembershipIdentityRejectSms($rid, $user->email, $user->getMembership->getMobile(), $user->getFormattedEntity()));
-                Mail::queue('frontend.emails.membership-identity-reject', ['name' => $user->getMembership->getName(), 'email' => $user->email, 'rid' => $rid, 'category' => $user->getFormattedEntity()], function($message) use($user){
-                    $message->to($user->email)->subject('CSI-Membership Registeration Identity Proof');
-                });
+                $data = [
+                    'data' => [
+                        "template" => "registration/membership-identity-reject",
+                        "subject" => 'CSI-Membership Registeration Identity Proof',
+                        "to" => $user->email,
+                        "payload" => ['name' => $user->getMembership->getName(), 'email' => $user->email, 'rid' => $rid, 'category' => $user->getFormattedEntity()]
+                    ]
+                ];
+                $response = $this->client->requestAsync('POST', 'http://127.0.0.1:8000/email',[
+                    'json' => $data,
+                ]);
             }
             Flash::success('profile rejected successfully');
         }

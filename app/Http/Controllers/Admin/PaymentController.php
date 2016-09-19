@@ -17,6 +17,7 @@ use App\RequestAction;
 use App\RequestService;
 use App\Service;
 use Carbon\Carbon;
+use GuzzleHttp\Client;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Input;
@@ -27,6 +28,13 @@ use Response;
 
 class PaymentController extends Controller
 {
+
+    private $client = null;
+
+    public function __construct(){
+        $this->client = new Client();
+    }
+
     /**
      * Display a listing of the resource.
      *
@@ -220,20 +228,25 @@ class PaymentController extends Controller
         $email = $user->email;
 
         if(App::environment('production')){
-            if ( ( $entity == 'institution-academic') || ( $entity == 'institution-non-academic') ) {
-                $this->dispatch(new SendVerificationRejectSms($aid, $email, $user->getMembership->getMobile()));
-                Mail::queue('frontend.emails.institution_reject_payment', ['name' => $user->getMembership->getName(), 'aid' => $aid, 'reason' => $journal->rejection_reason ], function($message) use($user){
-                    $message->to($user->email)->subject('CSI-Membership Payment Rejected'); 
-                    if($user->membership_id == 1){
-                        $message->cc($user->getMembership->email)->subject('CSI-Membership Payment Rejected'); 
-                    }
-                });
-            } else if ( ( $entity == 'individual-student') || ( $entity == 'individual-professional') ) {
-                $this->dispatch(new SendVerificationRejectSms($aid, $email, $user->getMembership->getMobile()));
-                Mail::queue('frontend.emails.individual_reject_payment', ['name' => $user->getMembership->getName(), 'aid' => $aid, 'reason' => $journal->rejection_reason ], function($message) use($user) {
-                    $message->to($user->email)->subject('CSI-Membership Payment Rejected'); 
-                });
+            $this->dispatch(new SendVerificationRejectSms($aid, $email, $user->getMembership->getMobile()));
+
+            $data = [
+                'data' => [
+                    "template" => "registration/institution_reject_payment",
+                    "subject" => "CSI-Membership Payment Rejected",
+                    "to" => $user->email,
+                    "payload" => ['name' => $user->getMembership->getName(), 'aid' => $aid, 'reason' => $journal->rejection_reason ]
+                ]
+            ];
+            if ( ( $entity == 'institution-academic') || ( $entity == 'institution-non-academic') ) { //institutions
+                $data['data']['cc'] = $user->getMembership->email;
+            } else if ( ( $entity == 'individual-student') || ( $entity == 'individual-professional') ) { //individuals 
+                $data['data']['template'] = "registration/individual_reject_payment";
             }
+            $response = $this->client->requestAsync('POST', 'http://127.0.0.1:8000/email',[
+                'json' => $data,
+            ]);
+            
         }
 
         Flash::success('Rejected Successfully');
@@ -271,20 +284,24 @@ class PaymentController extends Controller
                 $email = $user->email;
 
                 if(App::environment('production')){
-                    if ( ( $entity == 'institution-academic') || ( $entity == 'institution-non-academic') ) {
-                        $this->dispatch(new SendVerificationSms($cid, $email, $user->getMembership->getMobile()));
-                        Mail::queue('frontend.emails.institution_verify', ['membership_type' => $mt, 'period' => $period, 'name' => $user->getMembership->getName(), 'email' => $email, 'aid' => $aid, 'cid' => $cid], function($message) use($user){
-                            $message->to($user->email)->subject('CSI-Membership verified'); 
-                            if($user->membership_id == 1){
-                                $message->cc($user->getMembership->email)->subject('CSI-Membership verified'); 
-                            }
-                        });
-                    } else if ( ( $entity == 'individual-student') || ( $entity == 'individual-professional') ) {
-                        $this->dispatch(new SendVerificationSms($cid, $email, $user->getMembership->getMobile()));
-                        Mail::queue('frontend.emails.individual_verify', ['membership_type' => $mt, 'period' => $period, 'name' => $user->getMembership->getName(), 'email' => $email, 'aid' => $aid, 'cid' => $cid], function($message) use($user) {
-                            $message->to($user->email)->subject('CSI-Membership verified'); 
-                        });
+                    $this->dispatch(new SendVerificationSms($cid, $email, $user->getMembership->getMobile()));
+
+                    $data = [
+                        'data' => [
+                            "template" => "registration/institution_verify",
+                            "subject" => "CSI-Membership Payment Accepted",
+                            "to" => $user->email,
+                            "payload" => ['membership_type' => $mt, 'period' => $period, 'name' => $user->getMembership->getName(), 'email' => $email, 'aid' => $aid, 'cid' => $cid]
+                        ]
+                    ];
+                    if ( ( $entity == 'institution-academic') || ( $entity == 'institution-non-academic') ) { //institutions
+                        $data['data']['cc'] = $user->getMembership->email;
+                    } else if ( ( $entity == 'individual-student') || ( $entity == 'individual-professional') ) { //individuals 
+                        $data['data']['template'] = "registration/individual_verify";
                     }
+                    $response = $this->client->requestAsync('POST', 'http://127.0.0.1:8000/email',[
+                        'json' => $data,
+                    ]);
                 }
             }
             Flash::success('Accepted Successfully');

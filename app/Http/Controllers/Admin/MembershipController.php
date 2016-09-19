@@ -5,25 +5,33 @@ namespace App\Http\Controllers\Admin;
 use App\AcademicMember;
 use App\Admin;
 use App\CsiChapter;
+use App\Enums\ActionStatus;
 use App\Http\Controllers\Controller;
 use App\Http\Requests;
 use App\Individual;
 use App\Institution;
 use App\InstitutionType;
 use App\Member;
-use App\ProfessionalMember;
 use App\MembershipType;
 use App\Payment;
+use App\ProfessionalMember;
 use App\RequestService;
+use GuzzleHttp\Client;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Gate;
 use Illuminate\Support\Facades\Input;
 use Laracasts\Flash\Flash;
-use App\Enums\ActionStatus;
 
 class MembershipController extends Controller
 {
+
+    private $client = null;
+
+    public function __construct(){
+        $this->client = new Client();
+    }
+
     /**
      * Display a listing of the resource.
      *
