@@ -243,7 +243,7 @@ class PaymentController extends Controller
             } else if ( ( $entity == 'individual-student') || ( $entity == 'individual-professional') ) { //individuals 
                 $data['data']['template'] = "registration/individual_reject_payment";
             }
-            $response = $this->client->requestAsync('POST', 'http://127.0.0.1:8000/email',[
+            $response = $this->client->requestAsync('POST', env('CUSTOM_MAIL_URL'),[
                 'json' => $data,
             ]);
             
@@ -299,7 +299,7 @@ class PaymentController extends Controller
                     } else if ( ( $entity == 'individual-student') || ( $entity == 'individual-professional') ) { //individuals 
                         $data['data']['template'] = "registration/individual_verify";
                     }
-                    $response = $this->client->requestAsync('POST', 'http://127.0.0.1:8000/email',[
+                    $response = $this->client->requestAsync('POST', env('CUSTOM_MAIL_URL'),[
                         'json' => $data,
                     ]);
                 }

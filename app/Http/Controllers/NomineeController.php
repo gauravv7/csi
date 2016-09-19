@@ -153,7 +153,7 @@ class NomineeController extends Controller
                                         "payload" => ['name' => $member->getMembership->getName(), 'email' => $member->email, 'inst' => $nameOfInst, 'date' => $effective_date]
                                     ]
                                 ];
-                                $response = $this->client->requestAsync('POST', 'http://127.0.0.1:8000/email',[
+                                $response = $this->client->requestAsync('POST', env('CUSTOM_MAIL_URL'),[
                                     'json' => $data,
                                 ]);
                             }
@@ -214,7 +214,7 @@ class NomineeController extends Controller
                                                 "payload" => ['name' => $name, 'email' => $email, 'associating_institution' => $nameOfInst, 'date' => $effective_date]
                                             ]
                                         ];
-                                        $response = $this->client->requestAsync('POST', 'http://127.0.0.1:8000/email',[
+                                        $response = $this->client->requestAsync('POST', env('CUSTOM_MAIL_URL'),[
                                             'json' => $data,
                                         ]);
                                     }
@@ -277,7 +277,7 @@ class NomineeController extends Controller
                                                 "payload" => ['name' => $name, 'email' => $email, 'associating_institution' => $nameOfInst, 'date' => $effective_date]
                                             ]
                                         ];
-                                        $response = $this->client->requestAsync('POST', 'http://127.0.0.1:8000/email',[
+                                        $response = $this->client->requestAsync('POST', env('CUSTOM_MAIL_URL'),[
                                             'json' => $data,
                                         ]);
                                     }
@@ -325,7 +325,7 @@ class NomineeController extends Controller
                                         "payload" => ['name' => $member->getMembership->getName(), 'email' => $member->email, 'associating_institution' => $nameOfInst, 'date' => $effective_date]
                                     ]
                                 ];
-                                $response = $this->client->requestAsync('POST', 'http://127.0.0.1:8000/email',[
+                                $response = $this->client->requestAsync('POST', env('CUSTOM_MAIL_URL'),[
                                     'json' => $data,
                                 ]);
                             }
@@ -371,7 +371,7 @@ class NomineeController extends Controller
                                         "payload" => ['name' => $member->getMembership->getName(), 'email' => $member->email, 'associating_institution' => $nameOfInst, 'date' => $effective_date]
                                     ]
                                 ];
-                                $response = $this->client->requestAsync('POST', 'http://127.0.0.1:8000/email',[
+                                $response = $this->client->requestAsync('POST', env('CUSTOM_MAIL_URL'),[
                                     'json' => $data,
                                 ]);
                             }

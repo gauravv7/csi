@@ -269,7 +269,7 @@ class ProfileIdentityController extends Controller
                         "payload" => ['name' => $user->getMembership->getName(), 'email' => $user->email, 'rid' => $rid, 'category' => $user->getFormattedEntity()]
                     ]
                 ];
-                $response = $this->client->requestAsync('POST', 'http://127.0.0.1:8000/email',[
+                $response = $this->client->requestAsync('POST', env('CUSTOM_MAIL_URL'),[
                     'json' => $data,
                 ]);
             }
@@ -302,7 +302,7 @@ class ProfileIdentityController extends Controller
                         "payload" => ['name' => $user->getMembership->getName(), 'email' => $user->email, 'rid' => $rid, 'category' => $user->getFormattedEntity()]
                     ]
                 ];
-                $response = $this->client->requestAsync('POST', 'http://127.0.0.1:8000/email',[
+                $response = $this->client->requestAsync('POST', env('CUSTOM_MAIL_URL'),[
                     'json' => $data,
                 ]);
             }

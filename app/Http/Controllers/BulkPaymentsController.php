@@ -265,7 +265,7 @@ class BulkPaymentsController extends Controller
                     if ( $user->membership_id==1 ) { //institutions
                         $data['data']['cc'] = $user->getMembership->email;
                     }
-                    $response = $this->client->requestAsync('POST', 'http://127.0.0.1:8000/email',[
+                    $response = $this->client->requestAsync('POST', env('CUSTOM_MAIL_URL'),[
                         'json' => $data,
                     ]);
                 }
@@ -369,7 +369,7 @@ class BulkPaymentsController extends Controller
                 if ( $user->membership_id==1 ) { //institutions
                     $data['data']['cc'] = $user->getMembership->email;
                 }
-                $response = $this->client->requestAsync('POST', 'http://127.0.0.1:8000/email',[
+                $response = $this->client->requestAsync('POST', env('CUSTOM_MAIL_URL'),[
                     'json' => $data,
                 ]);
             }
@@ -436,7 +436,7 @@ class BulkPaymentsController extends Controller
             if ( $payer->membership_id==1 ) { //institutions
                 $data['data']['cc'] = $payer->getMembership->email;
             }
-            $response = $this->client->requestAsync('POST', 'http://127.0.0.1:8000/email',[
+            $response = $this->client->requestAsync('POST', env('CUSTOM_MAIL_URL'),[
                 'json' => $data,
             ]);
         }

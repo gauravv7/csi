@@ -132,7 +132,7 @@ class MembershipPaymentController extends Controller
                     }
 
                     if(App::environment('production')){
-                        $response = $this->client->requestAsync('POST', 'http://127.0.0.1:8000/email',[
+                        $response = $this->client->requestAsync('POST', env('CUSTOM_MAIL_URL'),[
                             'json' => $data,
                         ]);
                     }
