@@ -17,9 +17,10 @@
   
   
     <ul class="list-unstyled instructions">
-      <li><strong>Step 1:</strong> Download Sample CSV<li>
-      <li><strong>Step 2:</strong> Upload CSV containing data of new members</li>
-      <li><strong>Step 3:</strong> Make Payment</li>
+      <li><strong>Step 1:</strong> Download the provided documentation and read it carefully to fill the details. <li>
+      <li><strong>Step 2:</strong> Download the provided data file and fill the details according to documentation.<li>
+      <li><strong>Step 3:</strong> Upload the data file containing data of members</li>
+      <li><strong>Step 4:</strong> Make Payment</li>
     </ul>
   
     </div>
@@ -60,10 +61,13 @@
       <div class="col-md-8">
         <ul class="list-inline pull-left listing-quick-links">
           <li>
-            <a  class="btn btn-success btn-xs pull-left"  href={{ route('BulkPaymentsGetFileSample') }} title="download sample file for bulk-payments" style="text-transform: capitalize; font-size: 14px;"><span class="glyphicon glyphicon-file"></span>Download Sample Bulk Payment Data File</a>
+            <a  class="btn btn-success btn-xs pull-left"  href={{ route('BulkPaymentsGetDocumentation') }} title="download documentation for bulk-payments" style="text-transform: capitalize; font-size: 14px;"><span class="glyphicon glyphicon-file"></span><strong>1.&nbsp;</strong>Download Bulk Payment Documentation File</a>
           </li>
           <li>
-            <a class="btn btn-success btn-xs pull-left" data-toggle="modal" data-target="#uploadCSV" href="#" title="add a bulk-payment" style="text-transform: capitalize; font-size: 14px;"><span class="glyphicon glyphicon-plus"></span>Upload Bulk Payments Data File</a>
+            <a  class="btn btn-success btn-xs pull-left"  href={{ route('BulkPaymentsGetFileSample') }} title="download sample file for bulk-payments" style="text-transform: capitalize; font-size: 14px;"><span class="glyphicon glyphicon-file"></span><strong>2.&nbsp;</strong>Download Bulk Payment Data File</a>
+          </li>
+          <li>
+            <a class="btn btn-success btn-xs pull-left" data-toggle="modal" data-target="#uploadCSV" href="#" title="add a bulk-payment" style="text-transform: capitalize; font-size: 14px;"><span class="glyphicon glyphicon-plus"></span><strong>3.&nbsp;</strong>Upload Bulk Payments Data File</a>
           </li>
           <li>
             <a  class="btn btn-warning btn-xs pull-left"  href="#" title="view Instructions" style="text-transform: capitalize; font-size: 14px;" data-toggle="modal" data-target="#InstructionBulkPayments"><span class="glyphicon glyphicon-question-sign"></span>Click here for help</a>

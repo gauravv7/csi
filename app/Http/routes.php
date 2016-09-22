@@ -241,6 +241,7 @@ Route::group(['middleware'=>'checkUserPaymentsVerified'], function(){
 		Route::post('/{id}/edit', ['as' => 'BulkPaymentsEdit', 'uses' => 'BulkPaymentsController@uploadCSVEdit']);
 		Route::get('/{id}/getfile', ['as' => 'BulkPaymentsGetFile', 'uses' => 'BulkPaymentsController@downloadCSV']);
 		Route::get('/{id}/getfile/sample', ['as' => 'BulkPaymentsGetFileSample', 'uses' => 'BulkPaymentsController@downloadSampleCSV']);
+		Route::get('/{id}/getdocumentation', ['as' => 'BulkPaymentsGetDocumentation', 'uses' => 'BulkPaymentsController@downloadDocumentation']);
 		Route::get('/{id}/payments', ['as' => 'BulkPaymentsDoPayment', 'uses' => 'BulkPaymentsController@create']);
 		Route::post('/{id}/payments/{mode}', ['as' => 'BulkPaymentsStore', 'uses' => 'BulkPaymentsController@store']);
 		Route::get('/{id}/rejection-reason/{narration_id}', ['as' => 'adminMemberPaymentRejectionReason', 'uses' => 'BulkPaymentsController@viewRejectionReason']);

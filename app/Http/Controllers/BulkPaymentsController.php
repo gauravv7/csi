@@ -386,6 +386,9 @@ class BulkPaymentsController extends Controller
     public function downloadSampleCSV($id){
         return response()->download(storage_path() . '/sample-user-bulk-payments.csv', 'sample-user-bulk-payments.csv');
     }
+    public function downloadDocumentation($id){
+        return response()->download(storage_path() . '/bulk-payments-documentation.pdf', 'bulk-payments-documentation.pdf');
+    }
 
     public function storeOfflinePayment($id){
         $payer = Auth::user()->user();
