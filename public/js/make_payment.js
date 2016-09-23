@@ -77,9 +77,9 @@ $(document).ready(function(){
 });
 
 $(document).ready(function(){
-	if($('input:radio[name="membership-period"]').is(':checked')){
-		mp = $('input:radio[name="membership-period"]').val();
-		$('#membershipPeriod').text($(this).data('name'));
+	if($('input[name="membership-period"]').is(':checked')){
+		mp = $('input[name="membership-period"]:checked').val();
+		$('#membershipPeriod').text($('input[name="membership-period"]:checked').data('name'));
 		request_amount();
 	}
 });
