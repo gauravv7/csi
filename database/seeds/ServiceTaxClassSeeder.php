@@ -14,7 +14,7 @@ class ServiceTaxClassSeeder extends Seeder
     {
         DB::table('service_tax_classes')->delete();
 
-        ServiceTaxClass::create(['tax_rate' => '14']);
+        ServiceTaxClass::create(['tax_rate' => '14.5']);
         ServiceTaxClass::create(['tax_rate' => '0']);
     }
 }
