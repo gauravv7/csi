@@ -11,10 +11,10 @@
 	</div>
 	<div class="form-group">
 		<label for="exampleInputPassword1" class="req">Mode of transaction*</label>
-			{!! Form::select('paymentMode', $payModes, $paymentMode, ['class'=>'form-control'])!!}
+			{!! Form::select('paymentMode', $payModes, $paymentMode, ['class'=>'form-control', 'id'=>'payment_mode'])!!}
 	</div>
 	<div class="form-group">
-		<label for="exampleInputPassword1" class="req">Payment Transaction ID*</label>
+		<label for="exampleInputPassword1" class="req" id="payment_mode_label_text">Payment Transaction ID*</label>
 		{!! Form::text('tno', $tno, ['class'=>'form-control', 'placeholder'=>'Transaction/ Cheque/ DD number'])!!}
 		<span class="help-text">(in case of online payment)/Cheque/DD Number, not required in case of cash</span>
 	</div>

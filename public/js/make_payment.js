@@ -57,6 +57,28 @@ $(document).ready(function() {
         debug: false
     });
 });
+
+
+$(document).ready(function(){	
+	var newLabel = 'Payment Transaction ID';
+	$('#payment_mode').change(function(){
+		var id=$(this).val();
+	    switch(id){
+	        case "1":
+	            newLabel = 'Cheque Number';
+	            break;
+	        case "2":
+	            newLabel = 'Demand Draft Number';
+	            break;
+	        case "3":
+	            newLabel = 'Not Applicable for Cash';
+	            break;
+	        
+	    }
+    	$('#payment_mode_label_text').text(newLabel); 
+	});
+});
+
 //datepicker ui settings
 $(document).ready(function(){
 	var today = new Date();
