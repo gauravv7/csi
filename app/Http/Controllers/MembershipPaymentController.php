@@ -86,7 +86,11 @@ class MembershipPaymentController extends Controller
         if ($user){
             if($mode == 'offline'){
                 if($this->storeOfflinePayment($pid)){
-                    $paidDiff = Payment::find($pid)->getPayableDiff();
+                    $payment = Payment::find($pid);
+                    if($payment == null){
+                        abort(500);
+                    }
+                    $paidDiff = $payment->getPayableDiff();
 
                     if($paidDiff == 0){
                         // success
@@ -105,12 +109,20 @@ class MembershipPaymentController extends Controller
                     $aid = $user->getMembership->membershipType->prefix."-".$user->id;
                     $template = '';
 
+
+                    $payment_details = $this->getPaymentDetails();
+
+                    //getting payment Details
+                    $paymentMode = PaymentMode::find($payment_details["paymentMode"]);
+                    $paymentMode=$paymentMode->name;
+
                     $data = [
                         'data' => [
                             "template" => "registration/institution_register",
                             "subject" => "CSI-Membership",
                             "to" => $user->email,
-                            "payload" => ['name' => $name, 'email' => $email, 'aid' => $aid]
+                            "payload" => ['name' => $name, 'email' => $email, 'aid' => $aid,'paymentMode'=>$paymentMode,'tno'=>$payment_details["tno"],'drawn'=>$payment_details["drawn"],'bank'=>$payment_details["bank"],'branch'=>$payment_details["branch"],'amountPaid'=>$payment_details["amountPaid"], 'entity' => $entity
+                            ]
                         ]
                     ];
 
@@ -203,9 +215,6 @@ class MembershipPaymentController extends Controller
                 $paymentReciept         = Input::file('paymentReciept');
                 $amountPaid             = Input::get('amountPaid');
 
-
-
-
                 // 2nd arg is currency.. needs to be queried to put here
                 $head = PaymentHead::getHead(Payment::find($pid)->paymentHead->servicePeriod->id, 1)->first();
                 $finalAmount = ( $head->amount + (($head->amount*$head->serviceTaxClass->tax_rate)/100) );
@@ -241,5 +250,31 @@ class MembershipPaymentController extends Controller
         $journal = Journal::filterByPaymentAndNarration($id, $narration_id)->first();
         return $journal->rejection_reason;
     }
+
+    public function getPaymentDetails(){
+    
+        
+        $membership_period      = Input::get('membership-period');
+        $paymentMode            = Input::get('paymentMode');
+        $tno                    = Input::get('tno');
+        $drawn                  = Input::get('drawn');
+        $bank                   = Input::get('bank');
+        $branch                 = Input::get('branch');
+        $paymentReciept         = Input::file('paymentReciept');
+        $amountPaid             = Input::get('amountPaid');
+
+        $payment_details=[
+            "membership_period"=>$membership_period,
+            "paymentMode"=>$paymentMode,
+            "tno"=>$tno,
+            "drawn"=>$drawn,
+            "bank"=>$bank,
+            "branch"=>$branch,
+            "amountPaid"=>$amountPaid,
+            ];
+
+        return $payment_details;
+  
+}
 
 }

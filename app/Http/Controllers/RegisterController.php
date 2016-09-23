@@ -410,7 +410,7 @@ class RegisterController extends Controller
                                 "subject" => 'CSI-Membership',
                                 "to" => $user->email,
                                 "cc" => $user->getMembership->email.", ".$user->getMembership->head_name,
-                                "payload" => ['name' => $name, 'email' => $email, 'aid' => $aid,'paymentMode'=>$paymentMode,'tno'=>$payment_details["tno"],'drawn'=>$payment_details["drawn"],'bank'=>$payment_details["bank"],'branch'=>$payment_details["branch"],'amountPaid'=>$payment_details["amountPaid"]
+                                "payload" => ['name' => $name, 'email' => $email, 'aid' => $aid,'paymentMode'=>$paymentMode,'tno'=>$payment_details["tno"],'drawn'=>$payment_details["drawn"],'bank'=>$payment_details["bank"],'branch'=>$payment_details["branch"],'amountPaid'=>$payment_details["amountPaid"], 'entity'=>$entity
                                 ]
                             ]
                         ];
@@ -430,10 +430,10 @@ class RegisterController extends Controller
 
                         $data = [
                             'data' => [
-                                "template" => "registration/institution_register",
+                                "template" => "registration/individual_register",
                                 "subject" => 'CSI-Membership',
                                 "to" => $user->email,
-                                "payload" => ['name' => $name, 'email' => $email, 'aid' => $aid,'entity'=>$entity,'paymentMode'=>$paymentMode,'tno'=>$payment_details["tno"],'drawn'=>$payment_details["drawn"],'bank'=>$payment_details["bank"],'branch'=>$payment_details["branch"],'amountPaid'=>$payment_details["amountPaid"]
+                                "payload" => ['name' => $name, 'email' => $email, 'aid' => $aid,'entity'=>$entity,'paymentMode'=>$paymentMode,'tno'=>$payment_details["tno"],'drawn'=>$payment_details["drawn"],'bank'=>$payment_details["bank"],'branch'=>$payment_details["branch"],'amountPaid'=>$payment_details["amountPaid"], 'entity'=>$entity
                                 ]
                             ]
                         ];
@@ -1121,6 +1121,7 @@ class RegisterController extends Controller
         });
         return $var;
     }
+
     public function getPaymentDetails(){
         
             
@@ -1142,12 +1143,6 @@ class RegisterController extends Controller
                 "branch"=>$branch,
                 "amountPaid"=>$amountPaid,
                 ];
-
-               
-               
-
-
-            
 
             return $payment_details;
       
