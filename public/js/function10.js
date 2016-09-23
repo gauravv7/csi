@@ -162,9 +162,6 @@ $(document).ready(function(){
 	var today = new Date();
 
 	var professionalLastDate = new Date(today.getFullYear() -21, 31,12);
-	var startRange=today.getFullYear()-1900;
-
-
 	$("#dob_professional").datepicker({
 		dateFormat : 'dd/mm/yy',
 		changeMonth: true,
@@ -172,13 +169,24 @@ $(document).ready(function(){
 		//minDate:professionalLastDate,
 	    maxDate: professionalLastDate,
 	    hideIfNoPrevNext: true,
-		yearRange:  '-'+startRange+':-21'
+		yearRange:  (professionalLastDate.getFullYear()-50) + ": "+(professionalLastDate.getFullYear())
 	}).val();
+
 	$("#drawn_on").datepicker({
         changeMonth: true,
         changeYear: true,
 		dateFormat : 'dd/mm/yy'
 	}).val();
+
+	
+	$(".ui-datepicker").on("mouseenter", function() {
+		//Reverse the years
+		var dropYear = $("select.ui-datepicker-year");
+
+		dropYear.find('option').each(function() {
+			dropYear.prepend(this);
+		});
+	});
 	
 });
 //for-steps magic

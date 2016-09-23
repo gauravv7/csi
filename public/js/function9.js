@@ -168,8 +168,6 @@ $(document).ready(function() {
 $(document).ready(function(){
 	var today = new Date();
 	var studentLastDate = new Date(today.getFullYear() -15, 31, 12);
-	var startRange=today.getFullYear()-1900;
-
 	
 	$("#dob_student").datepicker({
 		dateFormat : 'dd/mm/yy',
@@ -178,13 +176,24 @@ $(document).ready(function(){
 		//minDate:new Date(1900,01,01),
 		maxDate: studentLastDate,
 	    hideIfNoPrevNext: true,
-		yearRange:  '-'+startRange+':-15'
+		yearRange:  (studentLastDate.getFullYear()-50) + ": "+(studentLastDate.getFullYear())
 	}).val();
+
 	$("#drawn_on").datepicker({
         changeMonth: true,
         changeYear: true,
 		dateFormat : 'dd/mm/yy'
 	}).val();
+
+	$(".ui-datepicker").on("mouseenter", function() {
+		//Reverse the years
+		var dropYear = $("select.ui-datepicker-year");
+
+		dropYear.find('option').each(function() {
+			dropYear.prepend(this);
+		});
+	});
+
 });
 //for-steps magic
 $(document).ready(function(){
